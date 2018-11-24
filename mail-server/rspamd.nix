@@ -42,7 +42,7 @@ in
       '');
 
       workers.rspamd_proxy = {
-        type = "proxy";
+        type = if (lib.versionAtLeast config.system.nixos.release "19.03") then "rspamd_proxy" else "proxy";
         bindSockets = [{
           socket = "/run/rspamd/rspamd-milter.sock";
           mode = "0664";
