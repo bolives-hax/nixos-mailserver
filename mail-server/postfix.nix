@@ -87,6 +87,10 @@ let
   # The user's own address is already in all_valiases_postfix.
   vaccounts_file = builtins.toFile "vaccounts" (lib.concatStringsSep "\n" all_valiases_postfix);
 
+  sasl_passwd_file = builtins.toFile "sasl_passwd" (if cfg.relay.enable && cfg.relay.credentials != ""
+    then "${cfg.relay.host} ${cfg.relay.credentials}"
+    else "");
+
   submissionHeaderCleanupRules = pkgs.writeText "submission_header_cleanup_rules" (''
      # Removes sensitive headers from mails handed in via the submission port.
      # See https://thomas-leister.de/mailserver-debian-stretch/
@@ -132,6 +136,7 @@ in
       mapFiles."denied_recipients" = denied_recipients_file;
       mapFiles."reject_senders" = reject_senders_file;
       mapFiles."reject_recipients" = reject_recipients_file;
+      mapFiles."sasl_passwd" = sasl_passwd_file;
       sslCert = certificatePath;
       sslKey = keyPath;
       enableSubmission = true;
@@ -211,7 +216,13 @@ in
         ${lib.optionalString cfg.dkimSigning "non_smtpd_milters = unix:/run/opendkim/opendkim.sock"}
         milter_protocol = 6
         milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_type} {auth_authen} {auth_author} {mail_addr} {mail_host} {mail_mailer}
-      '';
+
+      '' + (lib.optionalString (relay.enable && relay.credentials != "") ''
+        # Outgoing sasl auth
+        smtp_sasl_password_maps = ${mappedFile "sasl_passwd"}
+        smtp_sasl_security_options = noanonymous
+        smtp_sasl_auth_enable = yes
+      '');
 
       submissionOptions =
       {
@@ -244,6 +255,10 @@ in
           args = ["-o" "header_checks=pcre:${submissionHeaderCleanupRules}"];
         };
       };
+    }
+    // lib.optionalAttrs relay.enable {
+      relayHost = relay.host;
+      relayPort = relay.port;
     };
   };
 }

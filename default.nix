@@ -336,6 +336,52 @@ in
       ];
     };
 
+    relay = mkOption {
+      type = types.submodule {
+        options = {
+          enable = mkOption {
+            type = types.bool;
+            default = false;
+            description = ''
+              Sets whether Postfix should relay to an external mail relay.
+
+              See http://www.postfix.org/postconf.5.html#relayhost for details.
+            '';
+          };
+
+          host = mkOption {
+            type = types.str;
+            default = "";
+            example = "mail.example.com";
+            description = ''
+              The host to which Postfix should relay mail.
+            '';
+          };
+
+          port = mkOption {
+            type = types.int;
+            default = 587;
+            example = 587;
+            description = ''
+              The port to use when connecting to the relay host.
+            '';
+          };
+
+          credentials = mkOption {
+            type = types.str;
+            default = "";
+            example = "user@mail.example.com:password";
+            description = ''
+              The credentials to use when connecting to the relay host.
+
+              Typically in the form of username:password.
+            '';
+          };
+        };
+      };
+      default = {};
+    };
+
     certificateScheme = mkOption {
       type = types.enum [ 1 2 3 ];
       default = 2;
