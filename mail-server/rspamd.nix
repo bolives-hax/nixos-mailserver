@@ -29,6 +29,15 @@ in
       enable = true;
       extraConfig = ''
         extended_spam_headers = yes;
+        options {
+          dynamic_conf = "/var/lib/rspamd/rspamd_dynamic"; # For allowing to change options in the web UI
+          rrd = "/var/lib/rspamd/rspamd.rrd" # For throughput statistics
+        }
+        actions {
+          reject = null; # Disable rejects, default is 15
+          add_header = 6; # Add header when reaching this score
+          greylist = 4; # Apply greylisting when reaching this score (will emit `soft reject action`)
+        }
       '' + (lib.optionalString cfg.virusScanning ''
         antivirus {
           clamav {
@@ -41,33 +50,48 @@ in
         }
       '');
 
-      workers.rspamd_proxy = {
-        type = "rspamd_proxy";
-        bindSockets = [{
-          socket = "/run/rspamd/rspamd-milter.sock";
-          mode = "0664";
-        }];
-        count = 1; # Do not spawn too many processes of this type
-        extraConfig = ''
-          milter = yes; # Enable milter mode
-          timeout = 120s; # Needed for Milter usually
+      workers = {
+        rspamd_proxy = {
+          bindSockets = [{
+            socket = "/run/rspamd/rspamd-milter.sock";
+            mode = "0664";
+          }];
+          count = 1; # Do not spawn too many processes of this type
+          extraConfig = ''
+            milter = yes; # Enable milter mode
+            timeout = 120s; # Needed for Milter usually
 
-          upstream "local" {
-            default = yes; # Self-scan upstreams are always default
-            self_scan = yes; # Enable self-scan
-          }
-        '';
-      };
-      workers.controller = {
-        type = "controller";
-        count = 1;
-        bindSockets = [{
-          socket = "/run/rspamd/worker-controller.sock";
-          mode = "0666";
-        }];
-        includes = [];
-      };
+            upstream "local" {
+              default = yes; # Self-scan upstreams are always default
+              self_scan = yes; # Enable self-scan
+            }
+          '';
+        };
+        controller = {
+          count = 1; # Do not spawn too many processes of this type
+          bindSockets = [{
+            socket = "/run/rspamd/worker-controller.sock";
+            mode = "0666";
+          } {
+            # Use "ssh -L 8080:localhost:11334 youruser@example.com -N" to tunnel this securely to your browser's machine port 8080
+            socket = "localhost:11334";
+          }];
+          includes = [];
+          extraConfig = ''
+            # Password for normal commands
+            password = "${cfg.rspamd.password}";
+            # Password for privilleged commands
+            enable_password = "${cfg.rspamd.enablePassword}";
 
+            # static files for the web interface
+            static_dir = "''${WWWDIR}";
+
+            # For not having to enter the password on the command line
+            secure_ip = "::1";
+            secure_ip = "127.0.0.1";
+          '';
+        };
+      };
     };
     systemd.services.rspamd = {
       requires = (lib.optional cfg.virusScanning "clamav-daemon.service");
