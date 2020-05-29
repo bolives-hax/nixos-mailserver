@@ -132,8 +132,7 @@ in
       mapFiles."denied_recipients" = denied_recipients_file;
       mapFiles."reject_senders" = reject_senders_file;
       mapFiles."reject_recipients" = reject_recipients_file;
-      sslCert = certificatePath;
-      sslKey = keyPath;
+      tlsChainFiles = [ keyPath certificatePath ];
       enableSubmission = true;
       virtual =
         (lib.concatStringsSep "\n" (all_valiases_postfix ++ catchAllPostfix));
