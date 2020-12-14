@@ -46,7 +46,7 @@ let
     (lib.concatStringsSep "\n" (lib.flip map cfg.domains
       (dom: "${dom} ${dom}:${cfg.dkimSelector}:${cfg.dkimKeyDirectory}/${dom}.${cfg.dkimSelector}.key")));
   signingTable = pkgs.writeText "opendkim-SigningTable"
-    (lib.concatStringsSep "\n" (lib.flip map cfg.domains (dom: "*@*.${dom} ${dom}")));
+    (lib.concatStringsSep "\n" (lib.flip map cfg.domains (dom: "*@*.${dom} ${dom}\n*@${dom} ${dom}")));
 
   dkim = config.services.opendkim;
   args = [ "-f" "-l" ] ++ lib.optionals (dkim.configFile != null) [ "-x" dkim.configFile ];
