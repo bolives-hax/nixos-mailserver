@@ -125,6 +125,21 @@ the following minimal ``flake.nix`` as an example:
      };
    }
 
+If you require additional Subject Alt Names in the TLS certificate (for example if you want to use different subdomains for SMTP and IMAP), you can add them like so:
+
+.. code:: nix
+
+   {
+     # LetsEncrypt
+     security.acme = {
+       email = "you@example.com";
+       acceptTerms = true;
+       # Add `imap.*` as Subject Alt Name.
+       certs.${config.mailserver.fqdn}.extraDomainNames = [ "imap.example.com" ];
+     };
+   }
+
+
 B) Setup everything else
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
