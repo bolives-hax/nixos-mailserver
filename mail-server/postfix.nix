@@ -87,7 +87,8 @@ let
   # for details on how this file looks. By using the same file as valiases,
   # every alias is owned (uniquely) by its user.
   # The user's own address is already in all_valiases_postfix.
-  vaccounts_file = builtins.toFile "vaccounts" (lib.concatStringsSep "\n" all_valiases_postfix);
+  vaccounts_file = builtins.toFile "vaccounts"
+    (lib.concatStringsSep "\n" (all_valiases_postfix ++ catchAllPostfix));
 
   submissionHeaderCleanupRules = pkgs.writeText "submission_header_cleanup_rules" (''
      # Removes sensitive headers from mails handed in via the submission port.
