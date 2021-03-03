@@ -1,5 +1,5 @@
-A Complete Setup Guide
-======================
+Setup Guide
+===========
 
 Mail servers can be a tricky thing to set up. This guide is supposed to
 run you through the most important steps to achieve a 10/10 score on
@@ -19,8 +19,8 @@ What you need:
    These will be referred to as ``domains``. As an example,
    ``domains = [ example1.com, example2.com ]``.
 
-A) Setup server
-~~~~~~~~~~~~~~~
+Setup server
+~~~~~~~~~~~~
 
 The following describes a server setup that is fairly complete. Even
 though there are more possible options (see ``default.nix``), these
@@ -125,8 +125,8 @@ the following minimal ``flake.nix`` as an example:
      };
    }
 
-B) Setup everything else
-~~~~~~~~~~~~~~~~~~~~~~~~
+Setup everything else
+~~~~~~~~~~~~~~~~~~~~~
 
 Step 1: Set DNS entry for server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -269,8 +269,8 @@ last section.
 
 Note that it can take a while until a DNS entry is propagated.
 
-C) Test your Setup
-~~~~~~~~~~~~~~~~~~
+Test your Setup
+~~~~~~~~~~~~~~~
 
 Write an email to your aunt (who has been waiting for your reply far too
 long), and sign up for some of the finest newsletters the Internet has.
