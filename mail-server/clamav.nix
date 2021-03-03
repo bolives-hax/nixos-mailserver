@@ -24,9 +24,9 @@ in
     services.clamav.daemon.enable = true;
     services.clamav.updater.enable = true;
 
-    services.clamav.daemon.extraConfig = ''
-      PhishingScanURLs no
-    '';
+    services.clamav.daemon.settings = {
+      PhishingScanURLs = "no";
+    };
   };
 }
 
