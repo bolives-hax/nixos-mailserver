@@ -28,7 +28,7 @@ let
 
   releaseNames = [
     "nixpkgs-unstable"
-    "nixpkgs-20.09"
+    "nixpkgs-21.03"
   ];
 
   testNames = [
