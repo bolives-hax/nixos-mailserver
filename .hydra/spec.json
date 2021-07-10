@@ -12,7 +12,7 @@
   "type": 0,
   "inputs": {
     "nixexpr": {
-      "value": "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver master",
+      "value": "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver ci ",
       "type": "git",
       "emailresponsible": false
     },
