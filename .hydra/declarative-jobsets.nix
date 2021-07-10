@@ -15,21 +15,8 @@ let
       enableemail = false;
       emailoverride = "";
       keepnr = 1;
-      type = 0;
-      inputs = {
-        # This is only used to allow Niv to use pkgs.fetchzip which is
-        # required because of Hydra restricted evaluation mode.
-        nixpkgs = {
-          value = "https://github.com/NixOS/nixpkgs b6eefa48d8e10491e43c0c6155ac12b463f6fed3";
-          type = "git";
-          emailresponsible = false;
-        };
-        snm = {
-          type = "git";
-          value = "${info.target_repo_url} merge-requests/${info.iid}/head";
-          emailresponsible = false;
-        };
-      };
+      type = 1;
+      flake = "gitlab:simple-nixos-mailserver/nixos-mailserver/merge-requests/${info.iid}/head";
     }
   ) prs;
   mkJobset = branch: {
@@ -43,21 +30,8 @@ let
     emailoverride = "";
     keepnr = 3;
     hidden = false;
-    type = 0;
-    inputs = {
-      # This is only used to allow Niv to use pkgs.fetchzip which is
-      # required because of Hydra restricted evaluation mode.
-      nixpkgs = {
-        value = "https://github.com/NixOS/nixpkgs b6eefa48d8e10491e43c0c6155ac12b463f6fed3";
-        type = "git";
-        emailresponsible = false;
-      };
-      snm = {
-        value = "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver ${branch}";
-        type = "git";
-        emailresponsible = false;
-      };
-    };
+    type = 1;
+    flake = "gitlab:simple-nixos-mailserver/nixos-mailserver/${branch}";
   }; 
 
   desc = prJobsets // {
@@ -68,10 +42,20 @@ let
     "nixos-21.05" = mkJobset "nixos-21.05";
   };
 
+  log = {
+    pulls = prs;
+    jobsets = desc;
+  };
+
 in {
   jobsets = pkgs.runCommand "spec-jobsets.json" {} ''
     cat >$out <<EOF
     ${builtins.toJSON desc}
     EOF
+    # This is to get nice .jobsets build logs on Hydra
+    cat >tmp <<EOF
+    ${builtins.toJSON log}
+    EOF
+    ${pkgs.jq}/bin/jq . tmp
   '';
 }
