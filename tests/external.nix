@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>
 
-{ pkgs ? import <nixpkgs> {}}:
+{ pkgs ? import <nixpkgs> {}, ...}:
 
 pkgs.nixosTest {
   name = "external";
@@ -489,12 +489,10 @@ pkgs.nixosTest {
           client.fail("search Junk a >&2")
           # check that search really goes through the indexer
           server.succeed(
-              "journalctl -u dovecot2 | grep -E 'indexer-worker.* Mailbox INBOX: Indexed' >&2"
+              "journalctl -u dovecot2 | grep -E 'indexer-worker.* Mailbox INBOX: Mailbox opened because: indexing' >&2"
           )
           # check that Junk is not indexed
-          server.fail(
-              "journalctl -u dovecot2 | grep -E 'indexer-worker.* Mailbox JUNK: Indexed' >&2"
-          )
+          server.fail("journalctl -u dovecot2 | grep 'indexer-worker' | grep -i 'JUNK' >&2")
 
       with subtest("no warnings or errors"):
           server.fail("journalctl -u postfix | grep -i error >&2")
