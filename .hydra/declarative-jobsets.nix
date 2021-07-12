@@ -8,8 +8,6 @@ let
     { enabled = 1;
       hidden = false;
       description = "PR ${num}: ${info.title}";
-      nixexprinput = "snm";
-      nixexprpath = ".hydra/default.nix";
       checkinterval = 30;
       schedulingshares = 20;
       enableemail = false;
@@ -23,8 +21,6 @@ let
     description = "Build ${branch} branch of Simple NixOS MailServer";
     checkinterval = "60";
     enabled = "1";
-    nixexprinput = "snm";
-    nixexprpath = ".hydra/default.nix";
     schedulingshares = 100;
     enableemail = false;
     emailoverride = "";
