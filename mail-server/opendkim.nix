@@ -42,10 +42,10 @@ let
         '';
   createAllCerts = lib.concatStringsSep "\n" (map createDomainDkimCert cfg.domains);
 
-  keyTable = pkgs.writeText "opendkim-KeyTable" 
-    (lib.concatStringsSep "\n" (lib.flip map cfg.domains 
+  keyTable = pkgs.writeText "opendkim-KeyTable"
+    (lib.concatStringsSep "\n" (lib.flip map cfg.domains
       (dom: "${dom} ${dom}:${cfg.dkimSelector}:${cfg.dkimKeyDirectory}/${dom}.${cfg.dkimSelector}.key")));
-  signingTable = pkgs.writeText "opendkim-SigningTable" 
+  signingTable = pkgs.writeText "opendkim-SigningTable"
     (lib.concatStringsSep "\n" (lib.flip map cfg.domains (dom: "${dom} ${dom}")));
 
   dkim = config.services.opendkim;
@@ -79,6 +79,7 @@ in
         serviceConfig = {
           ExecStart = lib.mkForce "${pkgs.opendkim}/bin/opendkim ${escapeShellArgs args}";
           PermissionsStartOnly = lib.mkForce false;
+          ReadWritePaths = [ cfg.dkimKeyDirectory ];
         };
       };
       systemd.tmpfiles.rules = [
