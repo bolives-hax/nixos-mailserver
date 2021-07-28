@@ -6,7 +6,7 @@
 Welcome to NixOS Mailserver's documentation!
 ============================================
 
-.. image:: ../logo/logo.png
+.. image:: logo.png
    :width: 400
    :alt: SNM Logo
 
@@ -17,6 +17,7 @@ Welcome to NixOS Mailserver's documentation!
    howto-develop
    faq
    release-notes
+   options
 
 .. toctree::
    :maxdepth: 1
