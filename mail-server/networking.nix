@@ -20,18 +20,18 @@ let
   cfg = config.mailserver;
 in
 {
-  config = with cfg; lib.mkIf (enable && openFirewall) {
+  config = lib.mkIf (cfg.enable && cfg.openFirewall) {
 
     networking.firewall = {
       allowedTCPPorts = [ 25 ]
-        ++ lib.optional enableSubmission 587
-        ++ lib.optional enableSubmissionSsl 465
-        ++ lib.optional enableImap 143
-        ++ lib.optional enableImapSsl 993
-        ++ lib.optional enablePop3 110
-        ++ lib.optional enablePop3Ssl 995
-        ++ lib.optional enableManageSieve 4190
-        ++ lib.optional (certificateScheme == 3) 80;
+        ++ lib.optional cfg.enableSubmission 587
+        ++ lib.optional cfg.enableSubmissionSsl 465
+        ++ lib.optional cfg.enableImap 143
+        ++ lib.optional cfg.enableImapSsl 993
+        ++ lib.optional cfg.enablePop3 110
+        ++ lib.optional cfg.enablePop3Ssl 995
+        ++ lib.optional cfg.enableManageSieve 4190
+        ++ lib.optional (cfg.certificateScheme == 3) 80;
     };
   };
 }

@@ -24,10 +24,10 @@ let
   rspamdSocket = "rspamd.service";
 in
 {
-  config = with cfg; lib.mkIf enable {
+  config = lib.mkIf (cfg.enable && cfg.rspamd.enable) {
     services.rspamd = {
       enable = true;
-      inherit debug;
+      inherit (cfg) debug;
       locals = {
           "milter_headers.conf" = { text = ''
               extended_spam_headers = yes;

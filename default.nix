@@ -642,7 +642,7 @@ in
 
     localDnsResolver = mkOption {
       type = types.bool;
-      default = true;
+      default = cfg.rspamd.enable;
       description = ''
         Runs a local DNS resolver (kresd) as recommended when running rspamd. This prevents your log file from filling up with rspamd_monitored_dns_mon entries.
       '';
@@ -704,6 +704,10 @@ in
         Please be aware that this may cause problems with some mail clients
         relying on the original Message-ID.
       '';
+    };
+
+    rspamd = {
+      enable = mkEnableOption "spam filtering via rspamd" // { default = true; };
     };
 
     sendingFqdn = mkOption {
