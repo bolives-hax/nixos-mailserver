@@ -57,7 +57,7 @@ D9FE 4119 F082 6F15 93BD  BD36 6162 DBA5 635E A16A
  * Virus Scanning
     - [x] via clamav
  * DKIM Signing
-    - [x] via opendkim
+    - [x] via rspamd
  * User Management
     - [x] declarative user management
     - [x] declarative password management

@@ -152,14 +152,14 @@ Note that it can take a while until a DNS entry is propagated.
 Set ``DKIM`` signature
 ^^^^^^^^^^^^^^^^^^^^^^
 
-On your server, the ``opendkim`` systemd service generated a file
+On your server, the ``rspamd`` systemd service generated a file
 containing your DKIM public key in the file
 ``/var/dkim/example.com.mail.txt``. The content of this file looks
 like
 
 ::
 
-   mail._domainkey IN TXT "v=DKIM1; k=rsa; s=email; p=<really-long-key>" ; ----- DKIM mail for domain.tld
+   mail._domainkey IN TXT ( "v=DKIM1; k=rsa; p=<really-long-key>" ) ;
 
 where ``really-long-key`` is your public key.
 
