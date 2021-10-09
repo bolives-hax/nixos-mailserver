@@ -22,21 +22,6 @@ let
   postfixCfg = config.services.postfix;
   rspamdCfg = config.services.rspamd;
   rspamdSocket = "rspamd.service";
- 
-  createDkimKey = dom: let
-    dkimCommonPath = "${cfg.dkimKeyDirectory}/${dom}.${cfg.dkimSelector}";
-    dkimKey = dkimCommonPath + ".key";
-    dkimTxt = dkimCommonPath + ".txt";
-  in ''
-    if ! [ -f '${dkimKey}' -a -f '${dkimKey}' ]; then
-      ${pkgs.rspamd}/bin/rspamadm dkim_keygen \
-        -s '${cfg.dkimSelector}' -b '${toString cfg.dkimKeyBits}' -d '${dom}' \
-        -k '${dkimKey}' > '${dkimTxt}'
-      echo 'Generated key for domain ${dom} with selector ${cfg.dkimSelector}'
-    fi
-  '';
-
-  createAllDkimKeys = lib.concatStringsSep "\n" (map createDkimKey cfg.domains);
 in
 {
   config = with cfg; lib.mkIf enable {
@@ -116,10 +101,26 @@ in
 
     services.redis.enable = true;
 
-    systemd.services.rspamd = {
-      requires = [ "redis.service" ] ++ (lib.optional cfg.virusScanning "clamav-daemon.service");
-      after = [ "redis.service" ] ++ (lib.optional cfg.virusScanning "clamav-daemon.service");
-      preStart = lib.optionalString cfg.dkimSigning createAllDkimKeys;
+    systemd.services.dkim-keys = let
+      createDkimKey = dom: let
+        dkimPath = "${cfg.dkimKeyDirectory}/${dom}.${cfg.dkimSelector}";
+      in ''
+        if ! [ -f '${dkimPath}.key' -a -f '${dkimPath}.txt' ]; then
+          ${pkgs.rspamd}/bin/rspamadm dkim_keygen \
+            -s '${cfg.dkimSelector}' -b '${toString cfg.dkimKeyBits}' -d '${dom}' \
+            -k '${dkimPath}.key' > '${dkimPath}.txt'
+          echo 'Generated key for domain ${dom} with selector ${cfg.dkimSelector}'
+        fi
+      '';
+    in {
+      script = lib.concatStringsSep "\n" (map createDkimKey cfg.domains);
+    };
+
+    systemd.services.rspamd = rec {
+      requires = [ "redis.service" ]
+        ++ lib.optional cfg.virusScanning "clamav-daemon.service"
+        ++ lib.optional cfg.dkimSigning "dkim-keys.service";
+      after = requires;
     };
 
     systemd.services.postfix = {
