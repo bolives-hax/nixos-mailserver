@@ -612,7 +612,7 @@ in
 
     dkimBodyCanonicalization = mkOption {
         type = types.enum ["relaxed" "simple"];
-        default = "simple";
+        default = "relaxed";
         description = ''
           DKIM canonicalization algorithm for message bodies.
 
