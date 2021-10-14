@@ -116,9 +116,7 @@ let
   inetSocket = addr: port: "inet:[${toString port}@${addr}]";
   unixSocket = sock: "unix:${sock}";
 
-  smtpdMilters =
-   (lib.optional cfg.dkimSigning "unix:/run/opendkim/opendkim.sock")
-   ++ [ "unix:/run/rspamd/rspamd-milter.sock" ];
+  smtpdMilters = [ "unix:/run/rspamd/rspamd-milter.sock" ];
 
   policyd-spf = pkgs.writeText "policyd-spf.conf" cfg.policydSPFExtraConfig;
 
@@ -233,7 +231,6 @@ in
         tls_random_source = "dev:/dev/urandom";
 
         smtpd_milters = smtpdMilters;
-        non_smtpd_milters = lib.mkIf cfg.dkimSigning ["unix:/run/opendkim/opendkim.sock"];
         milter_protocol = "6";
         milter_mail_macros = "i {mail_addr} {client_addr} {client_name} {auth_type} {auth_authen} {auth_author} {mail_addr} {mail_host} {mail_mailer}";
 

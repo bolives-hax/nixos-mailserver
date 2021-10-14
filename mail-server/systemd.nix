@@ -73,11 +73,8 @@ in
     # Postfix requires dovecot lmtp socket, dovecot auth socket and certificate to work
     systemd.services.postfix = {
       wants = certificatesDeps;
-      after = [ "dovecot2.service" ]
-        ++ lib.optional cfg.dkimSigning "opendkim.service"
-        ++ certificatesDeps;
-      requires = [ "dovecot2.service" ]
-        ++ lib.optional cfg.dkimSigning "opendkim.service";
+      after = [ "dovecot2.service" ] ++ certificatesDeps;
+      requires = [ "dovecot2.service" ];
     };
   };
 }

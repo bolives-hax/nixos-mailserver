@@ -53,8 +53,9 @@ in
               }
           ''; };
           "dkim_signing.conf" = { text = ''
-              # Disable outbound email signing, we use opendkim for this
-              enabled = false;
+              path = "${cfg.dkimKeyDirectory}/$domain.$selector.key";
+              selector = "${cfg.dkimSelector}";
+              check_pubkey = true;
           ''; };
       };
 
@@ -100,9 +101,26 @@ in
 
     services.redis.enable = true;
 
-    systemd.services.rspamd = {
-      requires = [ "redis.service" ] ++ (lib.optional cfg.virusScanning "clamav-daemon.service");
-      after = [ "redis.service" ] ++ (lib.optional cfg.virusScanning "clamav-daemon.service");
+    systemd.services.dkim-keys = let
+      createDkimKey = dom: let
+        dkimPath = "${cfg.dkimKeyDirectory}/${dom}.${cfg.dkimSelector}";
+      in ''
+        if ! [ -f '${dkimPath}.key' -a -f '${dkimPath}.txt' ]; then
+          ${pkgs.rspamd}/bin/rspamadm dkim_keygen \
+            -s '${cfg.dkimSelector}' -b '${toString cfg.dkimKeyBits}' -d '${dom}' \
+            -k '${dkimPath}.key' > '${dkimPath}.txt'
+          echo 'Generated key for domain ${dom} with selector ${cfg.dkimSelector}'
+        fi
+      '';
+    in {
+      script = lib.concatStringsSep "\n" (map createDkimKey cfg.domains);
+    };
+
+    systemd.services.rspamd = rec {
+      requires = [ "redis.service" ]
+        ++ lib.optional cfg.virusScanning "clamav-daemon.service"
+        ++ lib.optional cfg.dkimSigning "dkim-keys.service";
+      after = requires;
     };
 
     systemd.services.postfix = {
@@ -111,6 +129,11 @@ in
     };
 
     users.extraUsers.${postfixCfg.user}.extraGroups = [ rspamdCfg.group ];
+
+    systemd.tmpfiles.rules = with rspamdCfg; [
+      "d '${cfg.dkimKeyDirectory}' - ${user} ${group} - -"
+      "Z '${cfg.dkimKeyDirectory}' - ${user} ${group} - -"
+    ];
   };
 }
 
