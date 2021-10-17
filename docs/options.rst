@@ -221,7 +221,7 @@ Runs a local DNS resolver (kresd) as recommended when running rspamd. This preve
 
 
 - Type: ``boolean``
-- Default: ``True``
+- Default: ``config.mailserver.rspamd.enable``
 
 
 mailserver.mailDirectory
@@ -352,6 +352,15 @@ relying on the original Message-ID.
 
 - Type: ``boolean``
 - Default: ``False``
+
+
+mailserver.rspamd.enable
+------------------------
+
+Whether to enable spam filtering via rspamd.
+
+- Type: ``boolean``
+- Default: ``True``
 
 
 mailserver.sendingFqdn
