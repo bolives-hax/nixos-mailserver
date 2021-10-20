@@ -78,3 +78,36 @@ To test imap manually use
 ::
 
    $ openssl s_client -host mail.example.com -port 143 -starttls imap
+
+opendkim
+--------
+
+to debug opendkim filtering (if you get errors like: ``Dec 11 18:35:51 mail opendkim[1454]: 9C4D771121A: no signing table match for ...``
+you can do something like:
+.. code:: shell
+
+    opendkim -Q
+
+Then at the prompt type:
+
+.. code:: shell
+
+    refile:/etc/opendkim/SigningTable
+    test@mydomain.com/1
+
+You should get back "mydomain.com". CTRL-D to exit.
+
+To debug opendkim keytable matching:
+
+.. code:: shell
+
+    opendkim -Q
+
+Then:
+
+.. code:: shell
+
+    refile:/etc/opendkim/KeyTable
+    mydomain.com/3
+
+you should get back 3 lines, the 1st is the domain to match, the 2nd is the selector and the 3rd is the keyfile to use. If you don't your keytable is incorrect.)

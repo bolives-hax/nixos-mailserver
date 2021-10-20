@@ -215,3 +215,22 @@ Besides that, you can send an email to
 score, and let `mxtoolbox.com <http://mxtoolbox.com/>`__ take a look at
 your setup, but if you followed the steps closely then everything should
 be awesome!
+
+D) Debug your Setup
+~~~~~~~~~~~~~~~~~~~
+
+in your mailserver config add ``debug= true;``
+
+D) Debug your Setup
+~~~~~~~~~~~~~~~~~~~
+
+in your mailserver config add ``debug= true;``
+
+.. code:: nix
+
+    mailserver = {
+        enable = true;
+        debug = true;
+
+
+Then check your logs via journalctl -u <service>  (so postfix, opendkim, rspamd, dovecot, etc).
