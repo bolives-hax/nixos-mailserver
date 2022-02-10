@@ -98,7 +98,11 @@ in
 
     };
 
-    services.redis.enable = true;
+    services.redis.servers.rspamd = {
+      enable = true;
+      port = 24561;
+      bind = "127.0.0.1";
+    };
 
     systemd.services.rspamd = {
       requires = [ "redis.service" ] ++ (lib.optional cfg.virusScanning "clamav-daemon.service");

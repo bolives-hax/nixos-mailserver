@@ -668,7 +668,7 @@ in
         type = types.str;
         # read the default from nixos' redis module
         default = let
-          cf = config.services.redis.bind;
+          cf = config.services.redis.servers.rspamd.bind;
           cfdefault = if cf == null then "127.0.0.1" else cf;
           ips = lib.strings.splitString " " cfdefault;
           ip = lib.lists.head (ips ++ [ "127.0.0.1" ]);
@@ -679,26 +679,26 @@ in
         else if isIpv6 ip then "[${ip}]" else ip;
         description = ''
           Address that rspamd should use to contact redis. The default value
-          is read from <literal>config.services.redis.bind</literal>.
+          is read from <literal>config.services.redis.servers.rspamd.bind</literal>.
         '';
       };
 
       port = mkOption {
         type = types.port;
-        default = config.services.redis.port;
+        default = config.services.redis.servers.rspamd.port;
         description = ''
           Port that rspamd should use to contact redis. The default value is
-          read from <literal>config.services.redis.port<literal>.
+          read from <literal>config.services.redis.servers.rspamd.port<literal>.
         '';
       };
 
       password = mkOption {
         type = types.nullOr types.str;
-        default = config.services.redis.requirePass;
+        default = config.services.redis.servers.rspamd.requirePass;
         description = ''
           Password that rspamd should use to contact redis, or null if not
           required. The default value is read from
-          <literal>config.services.redis.requirePass<literal>.
+          <literal>config.services.redis.servers.rspamd.requirePass<literal>.
         '';
       };
     };
