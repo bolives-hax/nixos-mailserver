@@ -100,6 +100,7 @@ in
 
     services.redis.servers.rspamd = {
       enable = lib.mkDefault true;
+      bind = lib.mkDefault "127.0.0.1";
       port = lib.mkDefault 6380;
     };
 
