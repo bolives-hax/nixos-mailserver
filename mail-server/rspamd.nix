@@ -101,6 +101,7 @@ in
     services.redis.servers.rspamd = {
       enable = lib.mkDefault true;
       port = lib.mkDefault 6380;
+      bind = "127.0.0.1";
     };
 
     systemd.services.rspamd = {
