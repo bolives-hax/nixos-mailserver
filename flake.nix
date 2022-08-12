@@ -30,6 +30,7 @@
       "external"
       "clamav"
       "multiple"
+      "ldap"
     ];
     genTest = testName: release: {
       "name"= "${testName}-${builtins.replaceStrings ["."] ["_"] release.name}";
