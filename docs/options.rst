@@ -462,7 +462,7 @@ e.g. `user1@example.com`. To generate the passwords use `htpasswd` as
 follows
 
 ```
-nix run nixpkgs.apacheHttpd -c htpasswd -nbB "" "super secret password" | cut -d: -f2
+nix-shell -p apacheHttpd --run 'htpasswd -nbB "" "super secret password" | cut -d: -f2'
 ```
 
 
@@ -499,7 +499,7 @@ mailserver.loginAccounts.<name>.hashedPassword
 The user's hashed password. Use `htpasswd` as follows
 
 ```
-nix run nixpkgs.apacheHttpd -c htpasswd -nbB "" "super secret password" | cut -d: -f2
+nix-shell -p apacheHttpd --run 'htpasswd -nbB "" "super secret password" | cut -d: -f2'
 ```
 
 Warning: this is stored in plaintext in the Nix store!
@@ -516,7 +516,7 @@ mailserver.loginAccounts.<name>.hashedPasswordFile
 A file containing the user's hashed password. Use `htpasswd` as follows
 
 ```
-nix run nixpkgs.apacheHttpd -c htpasswd -nbB "" "super secret password" | cut -d: -f2
+nix-shell -p apacheHttpd --run 'htpasswd -nbB "" "super secret password" | cut -d: -f2'
 ```
 
 
