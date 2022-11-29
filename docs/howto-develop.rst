@@ -19,7 +19,7 @@ You can then run the testsuite via
    $ nix flake check -L
 
 Since Nix doesn't garantee your machine have enough resources to run
-all test VMs in parallel, some tests can fail. You would then haev to
+all test VMs in parallel, some tests can fail. You would then have to
 run tests manually. For instance:
 
 ::

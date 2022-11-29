@@ -118,7 +118,7 @@ let
 
   smtpdMilters =
    (lib.optional cfg.dkimSigning "unix:/run/opendkim/opendkim.sock")
-   ++ [ "unix:/run/rspamd/rspamd-milter.sock" ];
+   ++ lib.optional cfg.rspamd.enable "unix:/run/rspamd/rspamd-milter.sock";
 
   policyd-spf = pkgs.writeText "policyd-spf.conf" cfg.policydSPFExtraConfig;
 
@@ -140,11 +140,11 @@ let
     };
 in
 {
-  config = with cfg; lib.mkIf enable {
+  config = lib.mkIf cfg.enable {
 
     services.postfix = {
       enable = true;
-      hostname = "${sendingFqdn}";
+      hostname = "${cfg.sendingFqdn}";
       networksStyle = "host";
       mapFiles."valias" = valiases_file;
       mapFiles."vaccounts" = vaccounts_file;
@@ -161,14 +161,14 @@ in
         # Extra Config
         mydestination = "";
         recipient_delimiter = cfg.recipientDelimiter;
-        smtpd_banner = "${fqdn} ESMTP NO UCE";
+        smtpd_banner = "${cfg.fqdn} ESMTP NO UCE";
         disable_vrfy_command = true;
         message_size_limit = toString cfg.messageSizeLimit;
 
         # virtual mail system
         virtual_uid_maps = "static:5000";
         virtual_gid_maps = "static:5000";
-        virtual_mailbox_base = mailDirectory;
+        virtual_mailbox_base = cfg.mailDirectory;
         virtual_mailbox_domains = vhosts_file;
         virtual_mailbox_maps = mappedFile "valias";
         virtual_transport = "lmtp:unix:/run/dovecot2/dovecot-lmtp";

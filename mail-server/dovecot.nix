@@ -43,7 +43,7 @@ let
   pipeBin = pkgs.stdenv.mkDerivation {
     name = "pipe_bin";
     src = ./dovecot/pipe_bin;
-    buildInputs = with pkgs; [ makeWrapper coreutils bash rspamd ];
+    buildInputs = with pkgs; [ makeWrapper coreutils bash ] ++ lib.optional cfg.rspamd.enable rspamd;
     buildCommand = ''
       mkdir -p $out/pipe/bin
       cp $src/* $out/pipe/bin/
@@ -52,7 +52,7 @@ let
 
       for file in $out/pipe/bin/*; do
         wrapProgram $file \
-          --set PATH "${pkgs.coreutils}/bin:${pkgs.rspamd}/bin"
+          --set PATH "${pkgs.coreutils}/bin${if cfg.rspamd.enable then ":${pkgs.rspamd}/bin" else ""}"
       done
     '';
   };
@@ -93,7 +93,7 @@ let
 
 in
 {
-  config = with cfg; lib.mkIf enable {
+  config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion = junkMailboxNumber == 1;
@@ -103,12 +103,12 @@ in
 
     services.dovecot2 = {
       enable = true;
-      enableImap = enableImap || enableImapSsl;
-      enablePop3 = enablePop3 || enablePop3Ssl;
+      enableImap = cfg.enableImap || cfg.enableImapSsl;
+      enablePop3 = cfg.enablePop3 || cfg.enablePop3Ssl;
       enablePAM = false;
       enableQuota = true;
-      mailGroup = vmailGroupName;
-      mailUser = vmailUserName;
+      mailGroup = cfg.vmailGroupName;
+      mailUser = cfg.vmailUserName;
       mailLocation = dovecotMaildir;
       sslServerCert = certificatePath;
       sslServerKey = keyPath;
@@ -132,7 +132,7 @@ in
 
       extraConfig = ''
         #Extra Config
-        ${lib.optionalString debug ''
+        ${lib.optionalString cfg.debug ''
           mail_debug = yes
           auth_debug = yes
           verbose_ssl = yes
@@ -190,7 +190,7 @@ in
           mail_max_userip_connections = ${toString cfg.maxConnectionsPerUser}
         }
 
-        mail_access_groups = ${vmailGroupName}
+        mail_access_groups = ${cfg.vmailGroupName}
         ssl = required
         ssl_min_protocol = TLSv1.2
         ssl_prefer_server_ciphers = yes

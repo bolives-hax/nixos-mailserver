@@ -27,7 +27,7 @@ let
       [ "acme-finished-${cfg.fqdn}.target" ];
 in
 {
-  config = with cfg; lib.mkIf enable {
+  config = lib.mkIf cfg.enable {
     # Create self signed certificate
     systemd.services.mailserver-selfsigned-certificate = lib.mkIf (cfg.certificateScheme == 2) {
       after = [ "local-fs.target" ];
@@ -58,14 +58,14 @@ in
       after = certificatesDeps;
       preStart = let
         directories = lib.strings.escapeShellArgs (
-          [ mailDirectory ]
+          [ cfg.mailDirectory ]
           ++ lib.optional (cfg.indexDir != null) cfg.indexDir
         );
       in ''
         # Create mail directory and set permissions. See
         # <http://wiki2.dovecot.org/SharedMailboxes/Permissions>.
         mkdir -p ${directories}
-        chgrp "${vmailGroupName}" ${directories}
+        chgrp "${cfg.vmailGroupName}" ${directories}
         chmod 02770 ${directories}
       '';
     };

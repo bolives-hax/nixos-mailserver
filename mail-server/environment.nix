@@ -20,9 +20,11 @@ let
   cfg = config.mailserver;
 in
 {
-  config = with cfg; lib.mkIf enable {
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      dovecot opendkim openssh postfix rspamd
-    ] ++ (if certificateScheme == 2 then [ openssl ] else []);
+      dovecot opendkim openssh postfix
+    ]
+    ++ lib.optional (cfg.certificateScheme == 2) openssl
+    ++ lib.optional cfg.rspamd.enable rspamd;
   };
 }
