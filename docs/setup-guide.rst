@@ -48,18 +48,19 @@ Setup the server
 ~~~~~~~~~~~~~~~~
 
 The following describes a server setup that is fairly complete. Even
-though there are more possible options (see the ``default.nix`` file),
-these should be the most common ones.
+though there are more possible options (see the `NixOS Mailserver
+options documentation <options.htmls>`_), these should be the most
+common ones.
 
 .. code:: nix
 
-   { config, pkgs, ... }:
-   {
+   { config, pkgs, ... }: {
      imports = [
        (builtins.fetchTarball {
-         # Pick a commit from the branch you are interested in
-         url = "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/archive/A-COMMIT-ID/nixos-mailserver-A-COMMIT-ID.tar.gz";
-         # And set its hash
+         # Pick a release version you are interested in and set its hash, e.g.
+         url = "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/archive/nixos-23.05/nixos-mailserver-nixos-23.05.tar.gz";
+         # To get the sha256 of the nixos-mailserver tarball, we can use the nix-prefetch-url command:
+         # release="nixos-23.05"; nix-prefetch-url "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/archive/${release}/nixos-mailserver-${release}.tar.gz" --unpack
          sha256 = "0000000000000000000000000000000000000000000000000000";
        })
      ];
@@ -72,17 +73,19 @@ these should be the most common ones.
        # A list of all login accounts. To create the password hashes, use
        # nix-shell -p mkpasswd --run 'mkpasswd -sm bcrypt'
        loginAccounts = {
-           "user1@example.com" = {
-               hashedPasswordFile = "/a/file/containing/a/hashed/password";
-               aliases = ["postmaster@example.com"];
-           };
-           "user2@example.com" = { ... };
+         "user1@example.com" = {
+           hashedPasswordFile = "/a/file/containing/a/hashed/password";
+           aliases = ["postmaster@example.com"];
+         };
+         "user2@example.com" = { ... };
        };
 
        # Use Let's Encrypt certificates. Note that this needs to set up a stripped
        # down nginx and opens port 80.
        certificateScheme = "acme-nginx";
      };
+     security.acme.acceptTerms = true;
+     security.acme.defaults.email = "security@example.com";
    }
 
 After a ``nixos-rebuild switch`` your server should be running all

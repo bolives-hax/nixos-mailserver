@@ -71,46 +71,11 @@ can stay up to date with bug fixes and updates.
 - Subscribe to the [mailing list](https://www.freelists.org/archive/snm/)
 - Join the Libera Chat IRC channel `#nixos-mailserver`
 
-### Quick Start
-
-```nix
-   { config, pkgs, ... }:
-   let release = "nixos-21.11";
-   in {
-     imports = [
-       (builtins.fetchTarball {
-         url = "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/archive/${release}/nixos-mailserver-${release}.tar.gz";
-         # This hash needs to be updated
-         sha256 = "0000000000000000000000000000000000000000000000000000";
-       })
-     ];
-
-     mailserver = {
-       enable = true;
-       fqdn = "mail.example.com";
-       domains = [ "example.com" "example2.com" ];
-       loginAccounts = {
-           "user1@example.com" = {
-               # nix-shell -p mkpasswd --run 'mkpasswd -sm bcrypt' > /hashed/password/file/location
-               hashedPasswordFile = "/hashed/password/file/location";
-
-               aliases = [
-                   "info@example.com"
-                   "postmaster@example.com"
-                   "postmaster@example2.com"
-               ];
-           };
-       };
-     };
-   }
-```
-
-For a complete list of options, see `default.nix`.
-
-
-
 ## How to Set Up a 10/10 Mail Server Guide
-Check out the [Complete Setup Guide](https://nixos-mailserver.readthedocs.io/en/latest/setup-guide.html) in the project's documentation.
+
+Check out the [Setup Guide](https://nixos-mailserver.readthedocs.io/en/latest/setup-guide.html) in the project's documentation.
+
+For a complete list of options, [see in readthedocs](https://nixos-mailserver.readthedocs.io/en/latest/options.html).
 
 ## Development
 
