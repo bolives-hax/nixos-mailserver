@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'NixOS Mailserver'
-copyright = '2022, NixOS Mailserver Contributors'
+copyright = '2023, NixOS Mailserver Contributors'
 author = 'NixOS Mailserver Contributors'
 
 
