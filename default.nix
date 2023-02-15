@@ -48,7 +48,11 @@ in
       type = types.listOf types.str;
       example = [ "imap.example.com" "pop3.example.com" ];
       default = [];
-      description = "Secondary domains and subdomains for which it is necessary to generate a certificate.";
+      description = ''
+        ({option}`mailserver.certificateScheme` == `acme-nginx`)
+
+        Secondary domains and subdomains for which it is necessary to generate a certificate.
+      '';
     };
 
     messageSizeLimit = mkOption {
@@ -448,19 +452,26 @@ in
       };
     };
 
-    certificateScheme = mkOption {
-      type = types.enum [ 1 2 3 ];
-      default = 2;
+    certificateScheme = let
+      schemes = [ "manual" "selfsigned" "acme-nginx" "acme" ];
+      translate = i: warn "setting mailserver.certificateScheme by number is deprecated, please use names instead"
+        (builtins.elemAt schemes (i - 1));
+    in mkOption {
+      type = with types; coercedTo (enum [ 1 2 3 ]) translate (enum schemes);
+      default = "selfsigned";
       description = ''
-        Certificate Files. There are three options for these.
+        The scheme to use for managing TLS certificates:
 
-        1) You specify locations and manually copy certificates there.
-        2) You let the server create new (self signed) certificates on the fly.
-        3) You let the server create a certificate via `Let's Encrypt`. Note that
-           this implies that a stripped down webserver has to be started. This also
-           implies that the FQDN must be set as an `A` record to point to the IP of
-           the server. In particular port 80 on the server will be opened. For details
-           on how to set up the domain records, see the guide in the readme.
+        1. `manual`: you specify locations via {option}`mailserver.certificateFile` and
+           {option}`mailserver.keyFile` and manually copy certificates there.
+        2. `selfsigned`: you let the server create new (self-signed) certificates on the fly.
+        3. `acme-nginx`: you let the server request certificates from [Let's Encrypt](https://letsencrypt.org)
+           via NixOS' ACME module. By default, this will set up a stripped-down Nginx server for
+           {option}`mailserver.fqdn` and open port 80. For this to work, the FQDN must be properly
+           configured to point to your server (see the [setup guide](setup-guide.rst) for more information).
+        4. `acme`: you already have an ACME certificate set up (for example, you're already running a TLS-enabled
+           Nginx server on the FQDN). This is better than `manual` because the appropriate services will be reloaded
+           when the certificate is renewed.
       '';
     };
 
@@ -468,8 +479,9 @@ in
       type = types.path;
       example = "/root/mail-server.crt";
       description = ''
-        Scheme 1)
-        Location of the certificate
+        ({option}`mailserver.certificateScheme` == `manual`)
+
+        Location of the certificate.
       '';
     };
 
@@ -477,8 +489,9 @@ in
       type = types.path;
       example = "/root/mail-server.key";
       description = ''
-        Scheme 1)
-        Location of the key file
+        ({option}`mailserver.certificateScheme` == `manual`)
+
+        Location of the key file.
       '';
     };
 
@@ -486,8 +499,9 @@ in
       type = types.path;
       default = "/var/certs";
       description = ''
-        Scheme 2)
-        This is the folder where the certificate will be created. The name is
+        ({option}`mailserver.certificateScheme` == `selfsigned`)
+
+        This is the folder where the self-signed certificate will be created. The name is
         hardcoded to "cert-DOMAIN.pem" and "key-DOMAIN.pem" and the
         certificate is valid for 10 years.
       '';

@@ -21,22 +21,22 @@ let
 in
 {
   # cert :: PATH
-  certificatePath = if cfg.certificateScheme == 1
+  certificatePath = if cfg.certificateScheme == "manual"
              then cfg.certificateFile
-             else if cfg.certificateScheme == 2
+             else if cfg.certificateScheme == "selfsigned"
                   then "${cfg.certificateDirectory}/cert-${cfg.fqdn}.pem"
-                  else if cfg.certificateScheme == 3
+                  else if cfg.certificateScheme == "acme" || cfg.certificateScheme == "acme-nginx"
                        then "${config.security.acme.certs.${cfg.fqdn}.directory}/fullchain.pem"
-                       else throw "Error: Certificate Scheme must be in { 1, 2, 3 }";
+                       else throw "unknown certificate scheme";
 
   # key :: PATH
-  keyPath = if cfg.certificateScheme == 1
+  keyPath = if cfg.certificateScheme == "manual"
         then cfg.keyFile
-        else if cfg.certificateScheme == 2
+        else if cfg.certificateScheme == "selfsigned"
              then "${cfg.certificateDirectory}/key-${cfg.fqdn}.pem"
-              else if cfg.certificateScheme == 3
+              else if cfg.certificateScheme == "acme" || cfg.certificateScheme == "acme-nginx"
                    then "${config.security.acme.certs.${cfg.fqdn}.directory}/key.pem"
-                   else throw "Error: Certificate Scheme must be in { 1, 2, 3 }";
+                   else throw "unknown certificate scheme";
 
   passwordFiles = let
     mkHashFile = name: hash: pkgs.writeText "${builtins.hashString "sha256" name}-password-hash" hash;
