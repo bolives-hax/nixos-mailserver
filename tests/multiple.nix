@@ -30,10 +30,7 @@ let
       };
       services.dnsmasq = {
         enable = true;
-        extraConfig = ''
-          mx-host=domain1.com,domain1,10
-          mx-host=domain2.com,domain2,10
-        '';
+        settings.mx-host = [ "domain1.com,domain1,10" "domain2.com,domain2,10" ];
       };
     };
 
