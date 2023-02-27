@@ -23,6 +23,6 @@
       <authentication>password-cleartext</authentication>
       <username>%EMAILADDRESS%</username>
     </outgoingServer>
-    @extraProviderConfig@
+    @extraEmailProvider@
   </emailProvider>
 </clientConfig>

@@ -30,16 +30,11 @@ in {
   mailserver.autoconfig.webRoot = pkgs.substituteAll ({
     name = "config-v1.1.xml";
     dir = "mail";
-    src = if cfg.template == null
-      then cfg.templateFile
-      else pkgs.writeTextFile {
-        name = "mailserver-autoconfig-template.xml";
-        text = cfg.template;
-      };
+    src = cfg.templateFile;
   } // {
     hostname = ms.fqdn;
     inherit (cfg)
-      emailProviderId displayName displayShortName extraProviderConfig;
+      emailProviderId displayName displayShortName extraEmailProvider;
     imapSslServer = incomingServer ms.enableImapSsl 993 "SSL";
     imapServer = incomingServer ms.enableImapSsl 143 "STARTTLS";
     pop3SslServer = incomingServer ms.enablePop3Ssl 995 "SSL";

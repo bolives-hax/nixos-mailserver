@@ -75,16 +75,7 @@ in
           '';
         };
 
-        template = mkOption {
-          type = types.nullOr types.lines;
-          default = null;
-          description = ''
-            The text of a template for the autoconfig XML file.
-            If provided, overrides `templateFile`.
-          '';
-        };
-
-        extraProviderConfig = mkOption {
+        extraEmailProvider = mkOption {
           type = types.lines;
           default = "";
           description = ''
