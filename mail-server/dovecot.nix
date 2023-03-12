@@ -29,10 +29,11 @@ let
   bool2int = x: if x then "1" else "0";
 
   maildirLayoutAppendix = lib.optionalString cfg.useFsLayout ":LAYOUT=fs";
+  maildirUTF8FolderNames = lib.optionalString cfg.useUTF8FolderNames ":UTF-8";
 
   # maildir in format "/${domain}/${user}"
   dovecotMaildir =
-    "maildir:${cfg.mailDirectory}/%d/%n${maildirLayoutAppendix}"
+    "maildir:${cfg.mailDirectory}/%d/%n${maildirLayoutAppendix}${maildirUTF8FolderNames}"
     + (lib.optionalString (cfg.indexDir != null)
        ":INDEX=${cfg.indexDir}/%d/%n"
       );

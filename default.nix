@@ -574,6 +574,14 @@ in
       '';
     };
 
+    useUTF8FolderNames = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Store mailbox names on disk using UTF-8 instead of modified UTF-7 (mUTF-7).
+      '';
+    };
+
     hierarchySeparator = mkOption {
       type = types.str;
       default = ".";
