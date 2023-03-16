@@ -22,7 +22,8 @@ let
   cfg = config.mailserver;
 
   passwdDir = "/run/dovecot2";
-  passwdFile = "${passwdDir}/passwd";
+  passdbFile = "${passwdDir}/passdb";
+  userdbFile = "${passwdDir}/userdb";
 
   bool2int = x: if x then "1" else "0";
 
@@ -74,16 +75,23 @@ let
       fi
     done
 
-    cat <<EOF > ${passwdFile}
+    cat <<EOF > ${passdbFile}
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: value:
-      "${name}:${"$(head -n 1 ${passwordFiles."${name}"})"}:${builtins.toString cfg.vmailUID}:${builtins.toString cfg.vmailUID}::${cfg.mailDirectory}:/run/current-system/sw/bin/nologin:"
+      "${name}:${"$(head -n 1 ${passwordFiles."${name}"})"}::::::"
+    ) cfg.loginAccounts)}
+    EOF
+
+    cat <<EOF > ${userdbFile}
+    ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: value:
+      "${name}:::::::"
         + (if lib.isString value.quota
               then "userdb_quota_rule=*:storage=${value.quota}"
               else "")
     ) cfg.loginAccounts)}
     EOF
 
-    chmod 600 ${passwdFile}
+    chmod 600 ${passdbFile}
+    chmod 600 ${userdbFile}
   '';
 
   junkMailboxes = builtins.attrNames (lib.filterAttrs (n: v: v ? "specialUse" && v.specialUse == "Junk") cfg.mailboxes);
@@ -212,12 +220,13 @@ in
 
         passdb {
           driver = passwd-file
-          args = ${passwdFile}
+          args = ${passdbFile}
         }
 
         userdb {
           driver = passwd-file
-          args = ${passwdFile}
+          args = ${userdbFile}
+          default_fields = uid=${builtins.toString cfg.vmailUID} gid=${builtins.toString cfg.vmailUID} home=${cfg.mailDirectory}
         }
 
         service auth {
