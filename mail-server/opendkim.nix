@@ -37,6 +37,7 @@ let
                                                    --directory="${cfg.dkimKeyDirectory}"
               mv "${cfg.dkimKeyDirectory}/${cfg.dkimSelector}.private" "${dkim_key}"
               mv "${cfg.dkimKeyDirectory}/${cfg.dkimSelector}.txt" "${dkim_txt}"
+              chmod 644 "${dkim_txt}"
               echo "Generated key for domain ${dom} selector ${cfg.dkimSelector}"
           fi
         '';
