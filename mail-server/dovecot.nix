@@ -254,6 +254,7 @@ in
 
           sieve_pipe_bin_dir = ${pipeBin}/pipe/bin
 
+          sieve_extensions = ${lib.concatStringsSep " " cfg.sieveExtensions}
           sieve_global_extensions = +vnd.dovecot.pipe +vnd.dovecot.environment
         }
 
