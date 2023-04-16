@@ -243,7 +243,7 @@ in
 
           # From elsewhere to Spam folder
           imapsieve_mailbox1_name = ${junkMailboxName}
-          imapsieve_mailbox1_causes = COPY
+          imapsieve_mailbox1_causes = COPY,APPEND
           imapsieve_mailbox1_before = file:${stateDir}/imap_sieve/report-spam.sieve
 
           # From Spam folder to elsewhere
