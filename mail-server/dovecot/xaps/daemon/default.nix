@@ -1,13 +1,14 @@
-{ buildGoModule, fetchFromGitHub, lib }:
-buildGoModule rec {
+{ buildGo117Module, fetchFromGitHub, lib }:
+buildGo117Module rec {
   pname = "xapsd";
-  version = "4ae4ab0c0e7faaafebf6d27f0bb028e22e857c02";
+  version = "f6d57333033694aabef7949de203527d7613aab5";
 
   src = fetchFromGitHub rec{
     owner = "freswa";
     repo = "dovecot-xaps-daemon";
     rev = version;
-    sha256 = "10sclfjc6aynrl20ky1f2c65d9rjk9midyqqfz11carj7ix2dk8f";
+    hash = "sha256-D5EefsaRydxcpdsS7ibvx5fEX29sCShI+IOXltyL5RQ=";
   };
-  vendorSha256 = "1sm78q4vimsyw5x0ad1h9r2vi2l7i240k5apph5inllsvwmb5m84";
+  vendorSha256 = "cbMtVH0p1Nlczv0o9wRdNTylY46TQfBCznHDLaf286I=";
+  proxyVendor = true; # XXX don't know why I need this to get a successful build
 }
