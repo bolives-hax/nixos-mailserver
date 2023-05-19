@@ -240,11 +240,11 @@ in
           '';
         };
 
-        password = mkOption {
+        passwordFile = mkOption {
           type = types.str;
-          example = "not$4f3";
+          example = "/run/my-secret";
           description = ''
-            Password required to authenticate against the LDAP servers.
+            A file containing the password required to authenticate against the LDAP servers.
           '';
         };
       };

@@ -22,9 +22,10 @@ let
   cfg = config.mailserver;
 
   passwdDir = "/run/dovecot2";
-  passdbFile = "${passwdDir}/passdb";
+  passwdFile = "${passwdDir}/passwd";
   userdbFile = "${passwdDir}/userdb";
-
+  # This file contains the ldap bind password
+  ldapConfFile = "${passwdDir}/dovecot-ldap.conf.ext";
   bool2int = x: if x then "1" else "0";
 
   maildirLayoutAppendix = lib.optionalString cfg.useFsLayout ":LAYOUT=fs";
@@ -58,6 +59,41 @@ let
     '';
   };
 
+
+  ldapConfig = pkgs.writeTextFile {
+    name = "dovecot-ldap.conf.ext.template";
+    text = ''
+      ldap_version = 3
+      uris = ${lib.concatStringsSep " " cfg.ldap.uris}
+      ${lib.optionalString cfg.ldap.startTls ''
+      tls = yes
+      ''}
+      tls_require_cert = hard
+      tls_ca_cert_file = ${cfg.ldap.tlsCAFile}
+      dn = ${cfg.ldap.bind.dn}
+      sasl_bind = no
+      auth_bind = yes
+      base = ${cfg.ldap.searchBase}
+      scope = ${mkLdapSearchScope cfg.ldap.searchScope}
+      ${lib.optionalString (cfg.ldap.dovecot.userAttrs != "") ''
+      user_attrs = ${cfg.ldap.dovecot.user_attrs}
+      ''}
+      user_filter = ${cfg.ldap.dovecot.userFilter}
+      ${lib.optionalString (cfg.ldap.dovecot.passAttrs != "") ''
+      pass_attrs = ${cfg.ldap.dovecot.passAttrs}
+      ''}
+      pass_filter = ${cfg.ldap.dovecot.passFilter}
+    '';
+  };
+
+  setPwdInLdapConfFile = appendLdapBindPwd {
+    name = "ldap-conf-file";
+    file = ldapConfig;
+    prefix = "dnpass = ";
+    passwordFile = cfg.ldap.bind.passwordFile;
+    destination = ldapConfFile;
+  };
+
   genPasswdScript = pkgs.writeScript "generate-password-file" ''
     #!${pkgs.stdenv.shell}
 
@@ -75,7 +111,7 @@ let
       fi
     done
 
-    cat <<EOF > ${passdbFile}
+    cat <<EOF > ${passwdFile}
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: value:
       "${name}:${"$(head -n 1 ${passwordFiles."${name}"})"}::::::"
     ) cfg.loginAccounts)}
@@ -90,7 +126,7 @@ let
     ) cfg.loginAccounts)}
     EOF
 
-    chmod 600 ${passdbFile}
+    chmod 600 ${passwdFile}
     chmod 600 ${userdbFile}
   '';
 
@@ -233,7 +269,7 @@ in
 
         passdb {
           driver = passwd-file
-          args = ${passdbFile}
+          args = ${passwdFile}
         }
 
         userdb {
@@ -245,12 +281,12 @@ in
         ${lib.optionalString cfg.ldap.enable ''
         passdb {
           driver = ldap
-          args = /etc/dovecot/dovecot-ldap.conf.ext
+          args = ${ldapConfFile}
         }
 
         userdb {
           driver = ldap
-          args = /etc/dovecot/dovecot-ldap.conf.ext
+          args = ${ldapConfFile}
           default_fields = home=/var/vmail/ldap/%u uid=${toString cfg.vmailUID} gid=${toString cfg.vmailUID}
         }
         ''}
@@ -317,37 +353,6 @@ in
       '';
     };
 
-    environment.etc = lib.optionalAttrs (cfg.ldap.enable) {
-      "dovecot/dovecot-ldap.conf.ext" = {
-        mode = "0600";
-        uid = config.ids.uids.dovecot2;
-        gid = config.ids.gids.dovecot2;
-        text = ''
-          ldap_version = 3
-          uris = ${lib.concatStringsSep " " cfg.ldap.uris}
-          ${lib.optionalString cfg.ldap.startTls ''
-          tls = yes
-          ''}
-          tls_require_cert = hard
-          tls_ca_cert_file = ${cfg.ldap.tlsCAFile}
-          dn = ${cfg.ldap.bind.dn}
-          dnpass = ${cfg.ldap.bind.password}
-          sasl_bind = no
-          auth_bind = yes
-          base = ${cfg.ldap.searchBase}
-          scope = ${mkLdapSearchScope cfg.ldap.searchScope}
-          ${lib.optionalString (cfg.ldap.dovecot.userAttrs != "") ''
-          user_attrs = ${cfg.ldap.dovecot.user_attrs}
-          ''}
-          user_filter = ${cfg.ldap.dovecot.userFilter}
-          ${lib.optionalString (cfg.ldap.dovecot.passAttrs != "") ''
-          pass_attrs = ${cfg.ldap.dovecot.passAttrs}
-          ''}
-          pass_filter = ${cfg.ldap.dovecot.passFilter}
-        '';
-      };
-    };
-
     systemd.services.dovecot2 = {
       preStart = ''
         ${genPasswdScript}
@@ -358,10 +363,10 @@ in
           ${pkgs.dovecot_pigeonhole}/bin/sievec "$k"
         done
         chown -R '${dovecot2Cfg.mailUser}:${dovecot2Cfg.mailGroup}' '${stateDir}/imap_sieve'
-      '';
+      '' + (lib.optionalString cfg.ldap.enable setPwdInLdapConfFile);
     };
 
-    systemd.services.postfix.restartTriggers = [ genPasswdScript ];
+    systemd.services.postfix.restartTriggers = [ genPasswdScript ] ++ (lib.optional cfg.ldap.enable [setPwdInLdapConfFile]);
 
     systemd.services.dovecot-fts-xapian-optimize = lib.mkIf (cfg.fullTextSearch.enable && cfg.fullTextSearch.maintenance.enable) {
       description = "Optimize dovecot indices for fts_xapian";
