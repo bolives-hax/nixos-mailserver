@@ -18,6 +18,11 @@ pkgs.nixosTest {
 
       virtualisation.memorySize = 1024;
 
+      services.openssh = {
+        enable = true;
+        permitRootLogin = "yes";
+      };
+
       environment.systemPackages = [
         (pkgs.writeScriptBin "mail-check" ''
           ${pkgs.python3}/bin/python ${../scripts/mail-check.py} $@
@@ -106,35 +111,35 @@ pkgs.nixosTest {
   };
   testScript = ''
     import sys
-
-    from glob import glob
+    import re
 
     machine.start()
     machine.wait_for_unit("multi-user.target")
 
-    def test_lookup(map, key, expected):
-      path = glob(f"/nix/store/*-{map}")[0]
-      value = machine.succeed(f"postmap -q alice@example.com ldap:{path}").rstrip()
+    # This function retrieves the ldap table file from a postconf
+    # command.
+    # A key lookup is achived and the returned value is compared
+    # to the expected value.
+    def test_lookup(postconf_cmdline, key, expected):
+      conf = machine.succeed(postconf_cmdline).rstrip()
+      ldap_table_path = re.match('.* =.*ldap:(.*)', conf).group(1)
+      value = machine.succeed(f"postmap -q {key} ldap:{ldap_table_path}").rstrip()
       try:
         assert value == expected
       except AssertionError:
-        print(f"Expected {map} lookup for key '{key}' to return '{expected}, but got '{value}'", file=sys.stderr)
+        print(f"Expected {conf} lookup for key '{key}' to return '{expected}, but got '{value}'", file=sys.stderr)
         raise
 
-
     with subtest("Test postmap lookups"):
-      test_lookup("ldap-virtual-mailbox-map.cf", "alice@example.com", "alice")
-      test_lookup("ldap-sender-login-map.cf", "alice", "alice")
+      test_lookup("postconf virtual_mailbox_maps", "alice@example.com", "alice@example.com")
+      test_lookup("postconf -P submission/inet/smtpd_sender_login_maps", "alice@example.com", "alice@example.com")
 
-      test_lookup("ldap-virtual-mailbox-map.cf", "bob@example.com", "alice")
-      test_lookup("ldap-sender-login-map.cf", "bob", "alice")
+      test_lookup("postconf virtual_mailbox_maps", "bob@example.com", "bob@example.com")
+      test_lookup("postconf -P submission/inet/smtpd_sender_login_maps", "bob@example.com", "bob@example.com")
 
     with subtest("Test doveadm lookups"):
-      out = machine.succeed("doveadm user -u alice")
-      machine.log(out)
-
-      out = machine.succeed("doveadm user -u bob")
-      machine.log(out)
+      machine.succeed("doveadm user -u alice@example.com")
+      machine.succeed("doveadm user -u bob@example.com")
 
     with subtest("Test account/mail address binding"):
       machine.fail(" ".join([
@@ -142,16 +147,16 @@ pkgs.nixosTest {
         "--smtp-port 587",
         "--smtp-starttls",
         "--smtp-host localhost",
-        "--smtp-username alice",
+        "--smtp-username alice@example.com",
         "--imap-host localhost",
-        "--imap-username bob",
+        "--imap-username bob@example.com",
         "--from-addr bob@example.com",
         "--to-addr aliceb@example.com",
         "--src-password-file <(echo '${alicePassword}')",
         "--dst-password-file <(echo '${bobPassword}')",
         "--ignore-dkim-spf"
       ]))
-      machine.succeed("journalctl -u postfix | grep -q 'Sender address rejected: not owned by user alice'")
+      machine.succeed("journalctl -u postfix | grep -q 'Sender address rejected: not owned by user alice@example.com'")
 
     with subtest("Test mail delivery"):
       machine.succeed(" ".join([
@@ -159,9 +164,9 @@ pkgs.nixosTest {
         "--smtp-port 587",
         "--smtp-starttls",
         "--smtp-host localhost",
-        "--smtp-username alice",
+        "--smtp-username alice@example.com",
         "--imap-host localhost",
-        "--imap-username bob",
+        "--imap-username bob@example.com",
         "--from-addr alice@example.com",
         "--to-addr bob@example.com",
         "--src-password-file <(echo '${alicePassword}')",
