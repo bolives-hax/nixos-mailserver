@@ -27,6 +27,7 @@ groups = ["mailserver.loginAccounts",
           "mailserver.dmarcReporting",
           "mailserver.fullTextSearch",
           "mailserver.redis",
+          "mailserver.ldap",
           "mailserver.monitoring",
           "mailserver.backup",
           "mailserver.borgbackup"]
