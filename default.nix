@@ -280,8 +280,8 @@ in
 
         userFilter = mkOption {
           type = types.str;
-          default = "cn=%u";
-          example = "(&(objectClass=inetOrgPerson)(cn=%u))";
+          default = "mail=%u";
+          example = "(&(objectClass=inetOrgPerson)(mail=%u))";
           description = ''
             Filter for user lookups in Dovecot.
 
@@ -304,9 +304,9 @@ in
         };
 
         passFilter = mkOption {
-          type = types.str;
-          default = "cn=%u";
-          example = "(&(objectClass=inetOrgPerson)(cn=%u))";
+          type = types.nullOr types.str;
+          default = "mail=%u";
+          example = "(&(objectClass=inetOrgPerson)(mail=%u))";
           description = ''
             Filter for password lookups in Dovecot.
 
@@ -331,7 +331,7 @@ in
 
         uidAttribute = mkOption {
           type = types.str;
-          default = "cn";
+          default = "mail";
           example = "uid";
           description = ''
             The LDAP attribute referencing the account name for a user.

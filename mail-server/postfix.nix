@@ -158,7 +158,7 @@ let
     (pkgs.writeText "ldap-sender-login-map.cf" ''
       ${commonLdapConfig}
       query_filter = ${cfg.ldap.postfix.filter}
-      result_attribute = ${cfg.ldap.postfix.uidAttribute}
+      result_attribute = ${cfg.ldap.postfix.mailAttribute}
     '');
 
   ldapVirtualMailboxMap = lib.optionalString (cfg.ldap.enable)
