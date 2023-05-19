@@ -133,13 +133,13 @@ let
       smtpd_sasl_security_options = "noanonymous";
       smtpd_sasl_local_domain = "$myhostname";
       smtpd_client_restrictions = "permit_sasl_authenticated,reject";
-      smtpd_sender_login_maps = "hash:/etc/postfix/vaccounts${lib.optionalString cfg.ldap.enable ",ldap:${ldapSenderLoginMap}"}";
+      smtpd_sender_login_maps = "hash:/etc/postfix/vaccounts${lib.optionalString cfg.ldap.enable ",ldap:${ldapSenderLoginMapFile}"}";
       smtpd_sender_restrictions = "reject_sender_login_mismatch";
       smtpd_recipient_restrictions = "reject_non_fqdn_recipient,reject_unknown_recipient_domain,permit_sasl_authenticated,reject";
       cleanup_service_name = "submission-header-cleanup";
     };
 
-  commonLdapConfig = lib.optionalString (cfg.ldap.enable) ''
+  commonLdapConfig = ''
     server_host = ${lib.concatStringsSep " " cfg.ldap.uris}
     start_tls = ${if cfg.ldap.startTls then "yes" else "no"}
     version = 3
@@ -151,25 +151,46 @@ let
 
     bind = yes
     bind_dn = ${cfg.ldap.bind.dn}
-    bind_pw = ${cfg.ldap.bind.password}
   '';
 
-  ldapSenderLoginMap = lib.optionalString (cfg.ldap.enable)
-    (pkgs.writeText "ldap-sender-login-map.cf" ''
-      ${commonLdapConfig}
-      query_filter = ${cfg.ldap.postfix.filter}
-      result_attribute = ${cfg.ldap.postfix.mailAttribute}
-    '');
+  ldapSenderLoginMap = pkgs.writeText "ldap-sender-login-map.cf" ''
+    ${commonLdapConfig}
+    query_filter = ${cfg.ldap.postfix.filter}
+    result_attribute = ${cfg.ldap.postfix.mailAttribute}
+  '';
+  ldapSenderLoginMapFile = "/run/postfix/ldap-sender-login-map.cf";
+  appendPwdInSenderLoginMap = appendLdapBindPwd {
+    name = "ldap-sender-login-map";
+    file = ldapSenderLoginMap;
+    prefix = "bind_pw = ";
+    passwordFile = cfg.ldap.bind.passwordFile;
+    destination = ldapSenderLoginMapFile;
+  };
 
-  ldapVirtualMailboxMap = lib.optionalString (cfg.ldap.enable)
-    (pkgs.writeText "ldap-virtual-mailbox-map.cf" ''
-       ${commonLdapConfig}
-       query_filter = ${cfg.ldap.postfix.filter}
-       result_attribute = ${cfg.ldap.postfix.uidAttribute}
-    '');
+  ldapVirtualMailboxMap = pkgs.writeText "ldap-virtual-mailbox-map.cf" ''
+    ${commonLdapConfig}
+    query_filter = ${cfg.ldap.postfix.filter}
+    result_attribute = ${cfg.ldap.postfix.uidAttribute}
+  '';
+  ldapVirtualMailboxMapFile = "/run/postfix/ldap-virtual-mailbox-map.cf";
+  appendPwdInVirtualMailboxMap = appendLdapBindPwd {
+    name = "ldap-virtual-mailbox-map";
+    file = ldapVirtualMailboxMap;
+    prefix = "bind_pw = ";
+    passwordFile = cfg.ldap.bind.passwordFile;
+    destination = ldapVirtualMailboxMapFile;
+  };
 in
 {
   config = with cfg; lib.mkIf enable {
+
+    systemd.services.postfix-setup = lib.mkIf cfg.ldap.enable {
+      preStart = ''
+        ${appendPwdInVirtualMailboxMap}
+        ${appendPwdInSenderLoginMap}
+      '';
+      restartTriggers = [ appendPwdInVirtualMailboxMap appendPwdInSenderLoginMap ];
+    };
 
     services.postfix = {
       enable = true;
@@ -202,7 +223,7 @@ in
         virtual_mailbox_maps = [
           (mappedFile "valias")
         ] ++ lib.optionals (cfg.ldap.enable) [
-          "ldap:${ldapVirtualMailboxMap}"
+          "ldap:${ldapVirtualMailboxMapFile}"
         ];
         virtual_transport = "lmtp:unix:/run/dovecot2/dovecot-lmtp";
         # Avoid leakage of X-Original-To, X-Delivered-To headers between recipients

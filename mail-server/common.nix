@@ -45,4 +45,25 @@ in
     if value.hashedPasswordFile == null then
       builtins.toString (mkHashFile name value.hashedPassword)
     else value.hashedPasswordFile) cfg.loginAccounts;
+
+  # Appends the LDAP bind password to files to avoid writing this
+  # password into the Nix store.
+  appendLdapBindPwd = {
+    name, file, prefix, passwordFile, destination
+  }: pkgs.writeScript "append-ldap-bind-pwd-in-${name}" ''
+    #!${pkgs.stdenv.shell}
+    set -euo pipefail
+
+    baseDir=$(dirname ${destination})
+    if (! test -d "$baseDir"); then
+      mkdir -p $baseDir
+      chmod 755 $baseDir
+    fi
+
+    cat ${file} > ${destination}
+    echo -n "${prefix}" >> ${destination}
+    cat ${passwordFile} >> ${destination}
+    chmod 600 ${destination}
+  '';
+
 }

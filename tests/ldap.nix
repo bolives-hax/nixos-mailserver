@@ -28,6 +28,8 @@ pkgs.nixosTest {
           ${pkgs.python3}/bin/python ${../scripts/mail-check.py} $@
         '')];
 
+      environment.etc.bind-password.text = bindPassword;
+
       services.openldap = {
         enable = true;
         settings = {
@@ -45,7 +47,7 @@ pkgs.nixosTest {
                   "olcMdbConfig"
                 ];
                 olcDatabase = "{1}mdb";
-                olcDbDirectory = "/var/lib/openldap";
+                olcDbDirectory = "/var/lib/openldap/example";
                 olcSuffix = "dc=example";
               };
             };
@@ -96,7 +98,7 @@ pkgs.nixosTest {
           ];
           bind = {
             dn = "cn=mail,dc=example";
-            password = bindPassword;
+            passwordFile = "/etc/bind-password";
           };
           searchBase = "ou=users,dc=example";
           searchScope = "sub";
@@ -140,6 +142,10 @@ pkgs.nixosTest {
     with subtest("Test doveadm lookups"):
       machine.succeed("doveadm user -u alice@example.com")
       machine.succeed("doveadm user -u bob@example.com")
+
+    with subtest("Files containing secrets are only readable by root"):
+      machine.succeed("ls -l /run/postfix/*.cf | grep -e '-rw------- 1 root root'")
+      machine.succeed("ls -l /run/dovecot2/dovecot-ldap.conf.ext | grep -e '-rw------- 1 root root'")
 
     with subtest("Test account/mail address binding"):
       machine.fail(" ".join([
