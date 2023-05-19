@@ -225,6 +225,7 @@ in
       tlsCAFile = mkOption {
         type = types.path;
         default = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        defaultText = lib.literalMD "see [source](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/blob/master/default.nix)";
         description = ''
           Certifificate trust anchors used to verify the LDAP server certificate.
         '';
@@ -324,7 +325,7 @@ in
           example = "(&(objectClass=inetOrgPerson)(mail=%s))";
           description = ''
             LDAP filter used to search for an account by mail, where
-            <literal>%s</literal> is a substitute for the address in
+            `%s` is a substitute for the address in
             question.
           '';
         };
