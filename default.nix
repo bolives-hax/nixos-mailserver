@@ -1252,6 +1252,7 @@ in
   };
 
   imports = [
+    ./mail-server/assertions.nix
     ./mail-server/borgbackup.nix
     ./mail-server/debug.nix
     ./mail-server/rsnapshot.nix
