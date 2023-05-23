@@ -468,8 +468,9 @@ in
       type = types.path;
       example = "/root/mail-server.crt";
       description = ''
-        Scheme 1)
-        Location of the certificate
+        Location of the certificate.
+
+        This option is only used when the `certificateScheme` is `1`.
       '';
     };
 
@@ -477,8 +478,9 @@ in
       type = types.path;
       example = "/root/mail-server.key";
       description = ''
-        Scheme 1)
-        Location of the key file
+        Location of the key file.
+
+        This option is only used when the `certificateScheme` is `1`.
       '';
     };
 
@@ -486,10 +488,11 @@ in
       type = types.path;
       default = "/var/certs";
       description = ''
-        Scheme 2)
         This is the folder where the certificate will be created. The name is
         hardcoded to "cert-DOMAIN.pem" and "key-DOMAIN.pem" and the
         certificate is valid for 10 years.
+
+        This option is only used when the `certificateScheme` is `2`.
       '';
     };
 
