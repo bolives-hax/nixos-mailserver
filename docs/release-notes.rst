@@ -1,10 +1,17 @@
 Release Notes
 =============
 
+
+NixOS 23.05
+-----------
+
+- Existing ACME certificates can be reused without configuring NGINX
+- Certificate scheme is no longer a number, but a meaningful string instead
+
 NixOS 22.11
 -----------
 
-- Allow Rspamd to send dmarc reporting
+- Allow Rspamd to send DMARC reporting
   (`merge request <https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/merge_requests/244>`__)
 
 NixOS 22.05

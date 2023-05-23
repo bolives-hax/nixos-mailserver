@@ -8,14 +8,14 @@
 For each NixOS release, we publish a branch. You then have to use the
 SNM branch corresponding to your NixOS version.
 
+* For NixOS 23.05
+   - Use the [SNM branch `nixos-23.05`](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/tree/nixos-23.05)
+   - [Documentation](https://nixos-mailserver.readthedocs.io/en/nixos-23.05/)
+   - [Release notes](https://nixos-mailserver.readthedocs.io/en/nixos-23.05/release-notes.html#nixos-23-05)
 * For NixOS 22.11
    - Use the [SNM branch `nixos-22.11`](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/tree/nixos-22.11)
    - [Documentation](https://nixos-mailserver.readthedocs.io/en/nixos-22.11/)
    - [Release notes](https://nixos-mailserver.readthedocs.io/en/nixos-22.11/release-notes.html#nixos-22-11)
-* For NixOS 22.05
-   - Use the [SNM branch `nixos-22.05`](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/tree/nixos-22.05)
-   - [Documentation](https://nixos-mailserver.readthedocs.io/en/nixos-22.05/)
-   - [Release notes](https://nixos-mailserver.readthedocs.io/en/nixos-22.05/release-notes.html#nixos-22-05)
 * For NixOS unstable
    - Use the [SNM branch `master`](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/tree/master)
    - [Documentation](https://nixos-mailserver.readthedocs.io/en/latest/)
@@ -112,30 +112,9 @@ For a complete list of options, see `default.nix`.
 ## How to Set Up a 10/10 Mail Server Guide
 Check out the [Complete Setup Guide](https://nixos-mailserver.readthedocs.io/en/latest/setup-guide.html) in the project's documentation.
 
-## How to Backup
-
-Checkout the [Complete Backup Guide](https://nixos-mailserver.readthedocs.io/en/latest/backup-guide.html). Backups are easy with `SNM`.
-
 ## Development
 
-See the [How to Develop SNM](https://nixos-mailserver.readthedocs.io/en/latest/howto-develop.html) wiki page.
-
-## Release notes
-
-### nixos-20.03
-
-- Rspamd is upgraded to 2.0 which deprecates the SQLite Bayes
-  backend. We then moved to the Redis backend (the default since
-  Rspamd 2.0). If you don't want to relearn the Redis backend from the
-  scratch, we could manually run
-
-      rspamadm statconvert --spam-db /var/lib/rspamd/bayes.spam.sqlite --ham-db /var/lib/rspamd/bayes.ham.sqlite -h 127.0.0.1:6379 --symbol-ham BAYES_HAM --symbol-spam BAYES_SPAM
-
-  See the [Rspamd migration
-  notes](https://rspamd.com/doc/migration.html#migration-to-rspamd-20)
-  and [this SNM Merge
-  Request](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/merge_requests/164)
-  for details.
+See the [How to Develop SNM](https://nixos-mailserver.readthedocs.io/en/latest/howto-develop.html) documentation page.
 
 ## Contributors
 See the [contributor tab](https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/graphs/master)
@@ -148,8 +127,6 @@ See the [contributor tab](https://gitlab.com/simple-nixos-mailserver/nixos-mails
    from [TheNounProject](https://thenounproject.com/) is licensed under
    [CC BY 3.0](http://creativecommons.org/~/3.0/)
  * Logo made with [Logomakr.com](https://logomakr.com)
-
-
 
 
 [logo]: docs/logo.png
