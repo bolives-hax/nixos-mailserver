@@ -36,7 +36,7 @@
       "multiple"
     ];
     genTest = testName: release: {
-      "name"= "${testName}-${release.name}";
+      "name"= "${testName}-${builtins.replaceStrings ["."] ["_"] release.name}";
       "value"= import (./tests/. + "/${testName}.nix") {
         pkgs = release.pkgs;
         inherit blobs;
