@@ -24,10 +24,6 @@
         name = "unstable";
         pkgs = nixpkgs.legacyPackages.${system};
       }
-      {
-        name = "22.11";
-        pkgs = nixpkgs-22_11.legacyPackages.${system};
-      }
     ];
     testNames = [
       "internal"
