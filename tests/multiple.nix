@@ -30,7 +30,12 @@ let
       };
       services.dnsmasq = {
         enable = true;
-        settings.mx-host = [ "domain1.com,domain1,10" "domain2.com,domain2,10" ];
+        # Fixme: once nixos-22.11 has been removed, could be replaced by
+        # settings.mx-host = [ "domain1.com,domain1,10" "domain2.com,domain2,10" ];
+        extraConfig = ''
+          mx-host=domain1.com,domain1,10
+          mx-host=domain2.com,domain2,10
+        '';
       };
     };
 
