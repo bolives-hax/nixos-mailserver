@@ -22,12 +22,7 @@ SNM branch corresponding to your NixOS version.
 
 [Subscribe to SNM Announcement List](https://www.freelists.org/list/snm)
 This is a very low volume list where new releases of SNM are announced, so you
-can stay up to date with bug fixes and updates. All announcements are signed by
-the gpg key with fingerprint
-
-```
-D9FE 4119 F082 6F15 93BD  BD36 6162 DBA5 635E A16A
-```
+can stay up to date with bug fixes and updates.
 
 
 ## Features
