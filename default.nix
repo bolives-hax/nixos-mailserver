@@ -454,7 +454,7 @@ in
 
     certificateScheme = let
       schemes = [ "manual" "selfsigned" "acme-nginx" "acme" ];
-      translate = i: warn "setting mailserver.certificateScheme by number is deprecated, please use names instead"
+      translate = i: warn "Setting mailserver.certificateScheme by number is deprecated, please use names instead: 'mailserver.certificateScheme = ${builtins.toString i}' can be replaced by 'mailserver.certificateScheme = \"${(builtins.elemAt schemes (i - 1))}\"'."
         (builtins.elemAt schemes (i - 1));
     in mkOption {
       type = with types; coercedTo (enum [ 1 2 3 ]) translate (enum schemes);
