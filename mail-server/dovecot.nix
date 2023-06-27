@@ -109,6 +109,13 @@ in
       }
     ];
 
+    # for sieve-test. Shelling it in on demand usually doesnt' work, as it reads
+    # the global config and tries to open shared libraries configured in there,
+    # which are usually not compatible.
+    environment.systemPackages = [
+      pkgs.dovecot_pigeonhole
+    ];
+
     services.dovecot2 = {
       enable = true;
       enableImap = enableImap || enableImapSsl;
