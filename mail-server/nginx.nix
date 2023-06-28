@@ -17,7 +17,7 @@
 
 { config, pkgs, lib, ... }:
 
-with (import ./common.nix { inherit config; });
+with (import ./common.nix { inherit config lib pkgs; });
 
 let
   cfg = config.mailserver;
@@ -36,7 +36,7 @@ in
       };
     };
 
-    security.acme.certs."${cfg.fqdn}".reloadServices = [
+    security.acme.certs."${cfg.acmeCertificateName}".reloadServices = [
       "postfix.service"
       "dovecot2.service"
     ];
