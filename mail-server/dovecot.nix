@@ -104,6 +104,9 @@ let
       chmod 755 "${passwdDir}"
     fi
 
+    # Prevent world-readable password files, even temporarily.
+    umask 077
+
     for f in ${builtins.toString (lib.mapAttrsToList (name: value: passwordFiles."${name}") cfg.loginAccounts)}; do
       if [ ! -f "$f" ]; then
         echo "Expected password hash file $f does not exist!"
@@ -125,9 +128,6 @@ let
               else "")
     ) cfg.loginAccounts)}
     EOF
-
-    chmod 600 ${passwdFile}
-    chmod 600 ${userdbFile}
   '';
 
   junkMailboxes = builtins.attrNames (lib.filterAttrs (n: v: v ? "specialUse" && v.specialUse == "Junk") cfg.mailboxes);
