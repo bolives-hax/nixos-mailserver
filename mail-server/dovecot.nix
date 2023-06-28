@@ -76,7 +76,7 @@ let
       base = ${cfg.ldap.searchBase}
       scope = ${mkLdapSearchScope cfg.ldap.searchScope}
       ${lib.optionalString (cfg.ldap.dovecot.userAttrs != "") ''
-      user_attrs = ${cfg.ldap.dovecot.user_attrs}
+      user_attrs = ${cfg.ldap.dovecot.userAttrs}
       ''}
       user_filter = ${cfg.ldap.dovecot.userFilter}
       ${lib.optionalString (cfg.ldap.dovecot.passAttrs != "") ''
