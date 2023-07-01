@@ -309,6 +309,7 @@ in
         done
         chown -R '${dovecot2Cfg.mailUser}:${dovecot2Cfg.mailGroup}' '${stateDir}/imap_sieve'
       '';
+      restartTriggers = [ genPasswdScript ];
     };
 
     systemd.services.postfix.restartTriggers = [ genPasswdScript ];
