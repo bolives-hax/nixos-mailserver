@@ -30,6 +30,7 @@ Welcome to NixOS Mailserver's documentation!
    fts
    flakes
    autodiscovery
+   ldap
 
 Indices and tables
 ==================
