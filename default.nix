@@ -111,6 +111,15 @@ in
             '';
           };
 
+          aliasesRegexp = mkOption {
+            type = with types; listOf types.str;
+            example = [''/^tom\..*@domain\.com$/''];
+            default = [];
+            description = ''
+              Same as {option}`mailserver.aliases` but using PCRE (Perl compatible regex).
+            '';
+          };
+
           catchAll = mkOption {
             type = with types; listOf (enum cfg.domains);
             example = ["example.com" "example2.com"];

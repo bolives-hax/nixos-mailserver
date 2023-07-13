@@ -33,6 +33,11 @@ let
       let to = name;
       in map (from: {"${from}" = to;}) (value.aliases ++ lib.singleton name))
     cfg.loginAccounts));
+  regex_valiases_postfix = mergeLookupTables (lib.flatten (lib.mapAttrsToList
+    (name: value:
+      let to = name;
+      in map (from: {"${from}" = to;}) value.aliasesRegexp)
+    cfg.loginAccounts));
 
   # catchAllPostfix :: Map String [String]
   catchAllPostfix =  mergeLookupTables (lib.flatten (lib.mapAttrsToList
@@ -65,6 +70,10 @@ let
     content = lookupTableToString (mergeLookupTables [all_valiases_postfix catchAllPostfix]);
   in builtins.toFile "valias" content;
 
+  regex_valiases_file = let
+    content = lookupTableToString regex_valiases_postfix;
+  in builtins.toFile "regex_valias" content;
+
   # denied_recipients_postfix :: [ String ]
   denied_recipients_postfix = (map
     (acct: "${acct.name} REJECT ${acct.sendOnlyRejectMessage}")
@@ -94,6 +103,7 @@ let
   # every alias is owned (uniquely) by its user.
   # The user's own address is already in all_valiases_postfix.
   vaccounts_file = builtins.toFile "vaccounts" (lookupTableToString all_valiases_postfix);
+  regex_vaccounts_file = builtins.toFile "regex_vaccounts" (lookupTableToString regex_valiases_postfix);
 
   submissionHeaderCleanupRules = pkgs.writeText "submission_header_cleanup_rules" (''
      # Removes sensitive headers from mails handed in via the submission port.
@@ -123,6 +133,7 @@ let
   policyd-spf = pkgs.writeText "policyd-spf.conf" cfg.policydSPFExtraConfig;
 
   mappedFile = name: "hash:/var/lib/postfix/conf/${name}";
+  mappedRegexFile = name: "pcre:/var/lib/postfix/conf/${name}";
 
   submissionOptions =
     {
@@ -133,7 +144,7 @@ let
       smtpd_sasl_security_options = "noanonymous";
       smtpd_sasl_local_domain = "$myhostname";
       smtpd_client_restrictions = "permit_sasl_authenticated,reject";
-      smtpd_sender_login_maps = "hash:/etc/postfix/vaccounts${lib.optionalString cfg.ldap.enable ",ldap:${ldapSenderLoginMapFile}"}";
+      smtpd_sender_login_maps = "hash:/etc/postfix/vaccounts${lib.optionalString cfg.ldap.enable ",ldap:${ldapSenderLoginMapFile}"}${lib.optionalString (regex_valiases_postfix != {}) ",pcre:/etc/postfix/regex_vaccounts"}";
       smtpd_sender_restrictions = "reject_sender_login_mismatch";
       smtpd_recipient_restrictions = "reject_non_fqdn_recipient,reject_unknown_recipient_domain,permit_sasl_authenticated,reject";
       cleanup_service_name = "submission-header-cleanup";
@@ -197,7 +208,9 @@ in
       hostname = "${sendingFqdn}";
       networksStyle = "host";
       mapFiles."valias" = valiases_file;
+      mapFiles."regex_valias" = regex_valiases_file;
       mapFiles."vaccounts" = vaccounts_file;
+      mapFiles."regex_vaccounts" = regex_vaccounts_file;
       mapFiles."denied_recipients" = denied_recipients_file;
       mapFiles."reject_senders" = reject_senders_file;
       mapFiles."reject_recipients" = reject_recipients_file;
@@ -224,7 +237,12 @@ in
           (mappedFile "valias")
         ] ++ lib.optionals (cfg.ldap.enable) [
           "ldap:${ldapVirtualMailboxMapFile}"
+        ] ++ lib.optionals (regex_valiases_postfix != {}) [
+          (mappedRegexFile "regex_valias")
         ];
+        virtual_alias_maps = lib.mkAfter (lib.optionals (regex_valiases_postfix != {}) [
+          (mappedRegexFile "regex_valias")
+        ]);
         virtual_transport = "lmtp:unix:/run/dovecot2/dovecot-lmtp";
         # Avoid leakage of X-Original-To, X-Delivered-To headers between recipients
         lmtp_destination_recipient_limit = "1";
