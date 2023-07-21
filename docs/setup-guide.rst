@@ -49,7 +49,7 @@ Setup the server
 
 The following describes a server setup that is fairly complete. Even
 though there are more possible options (see the `NixOS Mailserver
-options documentation <options.htmls>`_), these should be the most
+options documentation <options.html>`_), these should be the most
 common ones.
 
 .. code:: nix
