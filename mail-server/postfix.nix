@@ -273,6 +273,8 @@ in
         # TLS settings, inspired by https://github.com/jeaye/nix-files
         # Submission by mail clients is handled in submissionOptions
         smtpd_tls_security_level = "may";
+        smtp_tls_security_level = if cfg.useDane then "dane" else "may";
+        smtp_dns_support_level = if cfg.useDane then "dnssec" else "enabled";
 
         # strong might suffice and is computationally less expensive
         smtpd_tls_eecdh_grade = "ultra";
