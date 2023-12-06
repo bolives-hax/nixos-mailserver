@@ -309,6 +309,14 @@ in
 
         plugin {
           sieve_plugins = sieve_imapsieve sieve_extprograms
+          sieve_extensions = +editheader
+
+          # Header fields must not exceed one kilobyte
+          sieve_editheader_max_header_size = 1k
+
+          # Protected special headers
+          sieve_editheader_forbid_add = X-Verified
+          sieve_editheader_forbid_delete = X-Verified X-Seen
           sieve = file:${cfg.sieveDirectory}/%u/scripts;active=${cfg.sieveDirectory}/%u/active.sieve
           sieve_default = file:${cfg.sieveDirectory}/%u/default.sieve
           sieve_default_name = default
