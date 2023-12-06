@@ -266,7 +266,7 @@ in
         smtpd_recipient_restrictions = [
           "check_recipient_access ${mappedFile "denied_recipients"}"
           "check_recipient_access ${mappedFile "reject_recipients"}"
-          "check_policy_service inet:localhost:12340"
+          (lib.mkIf config.services.dovecot2.enableQuota "check_policy_service inet:localhost:12340")
           "check_policy_service unix:private/policy-spf"
         ];
 
