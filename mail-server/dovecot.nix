@@ -241,7 +241,7 @@ in
 
         protocol imap {
           mail_max_userip_connections = ${toString cfg.maxConnectionsPerUser}
-          mail_plugins = $mail_plugins imap_sieve
+          mail_plugins = $mail_plugins imap_sieve imap_filter_sieve
         }
 
         protocol pop3 {
