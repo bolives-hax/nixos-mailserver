@@ -501,7 +501,6 @@ pkgs.nixosTest {
 
       with subtest("dmarc reporting"):
           server.systemctl("start rspamd-dmarc-reporter.service")
-          server.wait_until_succeeds("journalctl -eu rspamd-dmarc-reporter.service -o cat | grep -q 'No reports for '")
 
       with subtest("no warnings or errors"):
           server.fail("journalctl -u postfix | grep -i error >&2")

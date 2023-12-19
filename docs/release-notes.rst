@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+NixOS 23.11
+-----------
+
+- Add basic support for LDAP users
+- Add support for regex (PCRE) aliases
 
 NixOS 23.05
 -----------
