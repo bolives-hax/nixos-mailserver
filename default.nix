@@ -955,6 +955,21 @@ in
       '';
     };
 
+    smtpdForbidBareNewline = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        With "smtpd_forbid_bare_newline = yes", the Postfix SMTP server
+        disconnects a remote SMTP client that sends a line ending in a 'bare
+        newline'.
+
+        This feature was added in Postfix 3.8.4 against SMTP Smuggling and will
+        default to "yes" in Postfix 3.9.
+
+        https://www.postfix.org/smtp-smuggling.html
+      '';
+    };
+
     sendingFqdn = mkOption {
       type = types.str;
       default = cfg.fqdn;
