@@ -309,7 +309,9 @@ in
         milter_protocol = "6";
         milter_mail_macros = "i {mail_addr} {client_addr} {client_name} {auth_type} {auth_authen} {auth_author} {mail_addr} {mail_host} {mail_mailer}";
 
+        # Fix for https://www.postfix.org/smtp-smuggling.html
         smtpd_forbid_bare_newline = cfg.smtpdForbidBareNewline;
+        smtpd_forbid_bare_newline_exclusions = "$mynetworks";
       };
 
       submissionOptions = submissionOptions;
