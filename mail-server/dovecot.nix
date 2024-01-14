@@ -175,8 +175,18 @@ in
       mailPlugins.globally.enable = lib.optionals cfg.fullTextSearch.enable [ "fts" "fts_xapian" ];
       protocols = lib.optional cfg.enableManageSieve "sieve";
 
-      sieveScripts = {
-        after = builtins.toFile "spam.sieve" ''
+      pluginSettings = {
+        sieve = "file:${cfg.sieveDirectory}/%u/scripts;active=${cfg.sieveDirectory}/%u/active.sieve";
+        sieve_default = "file:${cfg.sieveDirectory}/%u/default.sieve";
+        sieve_default_name = "default";
+      };
+
+      sieve = {
+        extensions = [
+          "fileinto"
+        ];
+
+        scripts.after = builtins.toFile "spam.sieve" ''
           require "fileinto";
 
           if header :is "X-Spam" "Yes" {
@@ -184,7 +194,25 @@ in
               stop;
           }
         '';
+
+        pipeBins = [
+          pipeBin
+        ];
       };
+
+      imapsieve.mailbox = [
+        {
+          name = junkMailboxName;
+          causes = [ "COPY" "APPEND" ];
+          before = "${stateDir}/imap_sieve/report-spam.sieve";
+        }
+        {
+          name = "*";
+          from = junkMailboxName;
+          causes = [ "COPY" ];
+          before = "${stateDir}/imap_sieve/report-ham.sieve";
+        }
+      ];
 
       mailboxes = cfg.mailboxes;
 
@@ -305,28 +333,6 @@ in
         namespace inbox {
           separator = ${cfg.hierarchySeparator}
           inbox = yes
-        }
-
-        plugin {
-          sieve_plugins = sieve_imapsieve sieve_extprograms
-          sieve = file:${cfg.sieveDirectory}/%u/scripts;active=${cfg.sieveDirectory}/%u/active.sieve
-          sieve_default = file:${cfg.sieveDirectory}/%u/default.sieve
-          sieve_default_name = default
-
-          # From elsewhere to Spam folder
-          imapsieve_mailbox1_name = ${junkMailboxName}
-          imapsieve_mailbox1_causes = COPY,APPEND
-          imapsieve_mailbox1_before = file:${stateDir}/imap_sieve/report-spam.sieve
-
-          # From Spam folder to elsewhere
-          imapsieve_mailbox2_name = *
-          imapsieve_mailbox2_from = ${junkMailboxName}
-          imapsieve_mailbox2_causes = COPY
-          imapsieve_mailbox2_before = file:${stateDir}/imap_sieve/report-ham.sieve
-
-          sieve_pipe_bin_dir = ${pipeBin}/pipe/bin
-
-          sieve_global_extensions = +vnd.dovecot.pipe +vnd.dovecot.environment
         }
 
         ${lib.optionalString cfg.fullTextSearch.enable ''
