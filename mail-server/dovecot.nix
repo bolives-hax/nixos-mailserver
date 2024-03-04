@@ -195,8 +195,11 @@ in
           }
         '';
 
-        pipeBins = [
-          pipeBin
+        pipeBins = map lib.getExe [
+          (pkgs.writeShellScriptBin "sa-learn-ham.sh"
+            "exec ${pkgs.rspamd}/bin/rspamc -h /run/rspamd/worker-controller.sock learn_ham")
+          (pkgs.writeShellScriptBin "sa-learn-spam.sh"
+            "exec ${pkgs.rspamd}/bin/rspamc -h /run/rspamd/worker-controller.sock learn_spam")
         ];
       };
 
@@ -204,13 +207,13 @@ in
         {
           name = junkMailboxName;
           causes = [ "COPY" "APPEND" ];
-          before = "${stateDir}/imap_sieve/report-spam.sieve";
+          before = ./dovecot/imap_sieve/report-spam.sieve;
         }
         {
           name = "*";
           from = junkMailboxName;
           causes = [ "COPY" ];
-          before = "${stateDir}/imap_sieve/report-ham.sieve";
+          before = ./dovecot/imap_sieve/report-ham.sieve;
         }
       ];
 
@@ -363,13 +366,6 @@ in
     systemd.services.dovecot2 = {
       preStart = ''
         ${genPasswdScript}
-        rm -rf '${stateDir}/imap_sieve'
-        mkdir '${stateDir}/imap_sieve'
-        cp -p "${./dovecot/imap_sieve}"/*.sieve '${stateDir}/imap_sieve/'
-        for k in "${stateDir}/imap_sieve"/*.sieve ; do
-          ${pkgs.dovecot_pigeonhole}/bin/sievec "$k"
-        done
-        chown -R '${dovecot2Cfg.mailUser}:${dovecot2Cfg.mailGroup}' '${stateDir}/imap_sieve'
       '' + (lib.optionalString cfg.ldap.enable setPwdInLdapConfFile);
     };
 
