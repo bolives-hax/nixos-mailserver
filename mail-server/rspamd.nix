@@ -30,7 +30,7 @@ in
       inherit debug;
       locals = {
           "milter_headers.conf" = { text = ''
-              extended_spam_headers = yes;
+              extended_spam_headers = true;
           ''; };
           "redis.conf" = { text = ''
               servers = "${cfg.redis.address}:${toString cfg.redis.port}";
@@ -67,14 +67,6 @@ in
                 msgid_from = "dmarc-rua";
               }''}
           ''; };
-      };
-
-      overrides = {
-        "milter_headers.conf" = {
-          text = ''
-            extended_spam_headers = true;
-          '';
-        };
       };
 
       workers.rspamd_proxy = {
