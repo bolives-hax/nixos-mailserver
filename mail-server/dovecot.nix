@@ -131,6 +131,9 @@ let
     EOF
   '';
 
+  xapsd = pkgs.callPackage ./dovecot/xaps/daemon {};
+  xapsPort = 11619;
+
   junkMailboxes = builtins.attrNames (lib.filterAttrs (n: v: v ? "specialUse" && v.specialUse == "Junk") cfg.mailboxes);
   junkMailboxNumber = builtins.length junkMailboxes;
   # The assertion garantees there is exactly one Junk mailbox.
@@ -171,7 +174,7 @@ in
       sslServerCert = certificatePath;
       sslServerKey = keyPath;
       enableLmtp = true;
-      modules = [ pkgs.dovecot_pigeonhole ] ++ (lib.optional cfg.fullTextSearch.enable pkgs.dovecot_fts_xapian );
+      modules = [ pkgs.dovecot_pigeonhole (pkgs.callPackage ./dovecot/xaps/plugin.nix {}) ] ++ (lib.optional cfg.fullTextSearch.enable pkgs.dovecot_fts_xapian );
       mailPlugins.globally.enable = lib.optionals cfg.fullTextSearch.enable [ "fts" "fts_xapian" ];
       protocols = lib.optional cfg.enableManageSieve "sieve";
 
@@ -241,7 +244,7 @@ in
 
         protocol imap {
           mail_max_userip_connections = ${toString cfg.maxConnectionsPerUser}
-          mail_plugins = $mail_plugins imap_sieve
+          mail_plugins = $mail_plugins imap_sieve notify push_notification xaps_push_notification xaps_imap
         }
 
         protocol pop3 {
@@ -265,7 +268,7 @@ in
         lmtp_save_to_detail_mailbox = ${cfg.lmtpSaveToDetailMailbox}
 
         protocol lmtp {
-          mail_plugins = $mail_plugins sieve
+          mail_plugins = $mail_plugins sieve notify push_notification xaps_push_notification
         }
 
         passdb {
@@ -327,6 +330,10 @@ in
           sieve_pipe_bin_dir = ${pipeBin}/pipe/bin
 
           sieve_global_extensions = +vnd.dovecot.pipe +vnd.dovecot.environment
+
+          # Push notifications
+          xaps_config = url=http://localhost:${builtins.toString xapsPort}
+          push_notification_driver = xaps
         }
 
         ${lib.optionalString cfg.fullTextSearch.enable ''
@@ -355,6 +362,9 @@ in
     };
 
     systemd.services.dovecot2 = {
+      after = [ "xapsd.service" ];
+      wants = [ "xapsd.service" ];
+      requires = [ "xapsd.service" ];
       preStart = ''
         ${genPasswdScript}
         rm -rf '${stateDir}/imap_sieve'
@@ -368,6 +378,60 @@ in
     };
 
     systemd.services.postfix.restartTriggers = [ genPasswdScript ] ++ (lib.optional cfg.ldap.enable [setPwdInLdapConfFile]);
+
+    systemd.units."xapsd.service".text =
+      let xapsdConfig = {
+        # see configs/xapsd/xapsd.yaml in the repo
+        loglevel = "info"; # trace, debug, error, fatal, info, panic, warn
+
+        databaseFile = "${stateDir}/xapsd/database.json"; # TODO add directory to tmpfiles?
+        appleId = ""; # email address. TODO add to config
+        appleIdHashedPassword = ""; # SHA256 hex hash of pwd. TODO add to config
+
+        port = xapsPort;
+
+        checkInterval = 20;
+        delay = 30;
+      }; in
+      ''
+      # Based on upstream's configs/systemd/xapsd.service
+      [Unit]
+      Description=Apple Push Notification Service
+      After=network.target auditd.service
+
+      [Service]
+      User=${dovecot2Cfg.mailUser}
+      Group=${dovecot2Cfg.mailGroup}
+      ExecStart=${xapsd}/bin/xapsd
+      Restart=on-failure
+
+      # Each IMAP process creates a persistent HTTP connection
+      LimitNOFILE=1024000
+
+      # Hardening
+      MemoryDenyWriteExecute=true
+      NoNewPrivileges=true
+      PrivateDevices=true
+      PrivateTmp=true
+      ProtectHome=true
+      ProtectControlGroups=true
+      ProtectKernelModules=true
+      ProtectSystem=strict
+      RestrictRealtime=true
+      SystemCallArchitectures=native
+      SystemCallFilter=@system-service
+      RestrictNamespaces=yes
+      LockPersonality=yes
+      RestrictSUIDSGID=yes
+      ReadWritePaths=${stateDir}/xapsd
+
+      [Install]
+      WantedBy=multi-user.target
+
+      # Stuff for nix
+      [Service]
+      BindReadOnlyPaths=${pkgs.writeText "xapsd.yaml" (lib.generators.toYAML {} xapsdConfig)}:/etc/xapsd/xapsd.yaml
+    '';
 
     systemd.services.dovecot-fts-xapian-optimize = lib.mkIf (cfg.fullTextSearch.enable && cfg.fullTextSearch.maintenance.enable) {
       description = "Optimize dovecot indices for fts_xapian";
