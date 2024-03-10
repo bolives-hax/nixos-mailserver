@@ -176,6 +176,19 @@ in
       protocols = lib.optional cfg.enableManageSieve "sieve";
 
       sieveScripts = {
+        before = builtins.toFile "deltachat.sieve" ''
+          require "fileinto";
+          require "mailbox";
+
+          if header :contains ["Chat-Version"] [""] {
+            if mailboxexists "DeltaChat" {
+              fileinto "DeltaChat";
+            } else {
+              fileinto :create "DeltaChat";
+            }
+            stop;
+          }
+        '';
         after = builtins.toFile "spam.sieve" ''
           require "fileinto";
 
