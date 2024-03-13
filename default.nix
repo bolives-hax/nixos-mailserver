@@ -743,6 +743,18 @@ in
       '';
     };
 
+    sieveExtensions = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      example = [ "+editheader" ];
+      description = ''
+        Enabled extensions for the sieve interpreter. See
+        https://doc.dovecot.org/configuration_manual/sieve/#sieve-plugins .
+        For an example usage see
+        https://doc.dovecot.org/configuration_manual/sieve/configuring_auto_forward_sender_address/
+      '';
+    };
+
     virusScanning = mkOption {
       type = types.bool;
       default = false;
