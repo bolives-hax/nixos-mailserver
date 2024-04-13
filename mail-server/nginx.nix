@@ -21,7 +21,6 @@ with (import ./common.nix { inherit config; });
 
 let
   cfg = config.mailserver;
-  acmeRoot = "/var/lib/acme/acme-challenge";
 in
 {
   config = lib.mkIf (cfg.enable && (cfg.certificateScheme == "acme" || cfg.certificateScheme == "acme-nginx")) {
@@ -32,7 +31,6 @@ in
         serverAliases = cfg.certificateDomains;
         forceSSL = true;
         enableACME = true;
-        acmeRoot = acmeRoot;
       };
     };
 
