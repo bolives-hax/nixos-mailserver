@@ -49,7 +49,7 @@ in
   # Appends the LDAP bind password to files to avoid writing this
   # password into the Nix store.
   appendLdapBindPwd = {
-    name, file, prefix, passwordFile, destination
+    name, file, prefix, suffix ? "", passwordFile, destination
   }: pkgs.writeScript "append-ldap-bind-pwd-in-${name}" ''
     #!${pkgs.stdenv.shell}
     set -euo pipefail
@@ -61,8 +61,9 @@ in
     fi
 
     cat ${file} > ${destination}
-    echo -n "${prefix}" >> ${destination}
+    echo -n '${prefix}' >> ${destination}
     cat ${passwordFile} >> ${destination}
+    echo -n '${suffix}' >> ${destination}
     chmod 600 ${destination}
   '';
 

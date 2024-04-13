@@ -90,7 +90,8 @@ let
   setPwdInLdapConfFile = appendLdapBindPwd {
     name = "ldap-conf-file";
     file = ldapConfig;
-    prefix = "dnpass = ";
+    prefix = ''dnpass = "'';
+    suffix = ''"'';
     passwordFile = cfg.ldap.bind.passwordFile;
     destination = ldapConfFile;
   };
