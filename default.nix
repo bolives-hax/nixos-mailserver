@@ -683,6 +683,19 @@ in
       '';
     };
 
+    useDane = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable DANE support.
+
+       This works only in conjunction with:
+       1. 'extraLegoRenewFlags = "--reuse-key"' in acme configuration for DOMAIN,
+          so that the private key gets reused and thus the fingerprint does not change.
+       2. TLSA-records in DNS
+      '';
+    };
+
     enableImapSsl = mkOption {
       type = types.bool;
       default = true;
