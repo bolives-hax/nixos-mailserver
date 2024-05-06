@@ -1285,6 +1285,7 @@ in
 
   imports = [
     ./mail-server/assertions.nix
+    ./mail-server/autoconfig
     ./mail-server/borgbackup.nix
     ./mail-server/debug.nix
     ./mail-server/rsnapshot.nix
