@@ -65,6 +65,9 @@ in
                 org_name = "${cfg.dmarcReporting.organizationName}";
                 from_name = "${cfg.dmarcReporting.fromName}";
                 msgid_from = "dmarc-rua";
+                ${lib.optionalString (cfg.dmarcReporting.excludeDomains != []) ''
+                  exclude_domains = ${builtins.toJSON cfg.dmarcReporting.excludeDomains};
+                ''}
               }''}
           ''; };
       };
