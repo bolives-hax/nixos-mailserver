@@ -47,9 +47,10 @@ details the meaning of each symbol. You can tune the weight if a symbol if neede
 
   services.rspamd.locals = {
     "groups.conf".text = ''
-      symbols {
-        "FORGED_RECIPIENTS" { weight = 0; }
-      }'';
+      symbols "FORGED_RECIPIENTS" {
+        weight = 0;
+      }
+    '';
   };
 
 Tune action thresholds
