@@ -108,6 +108,10 @@ exemple with `basic auth <https://docs.nginx.com/nginx/admin-guide/security-cont
     locations = {
       "/" = {
         proxyPass = "http://unix:/run/rspamd/worker-controller.sock:/";
+        recommendedProxySettings = false;
+        extraConfig = ''proxy_set_header        X-Forwarded-For "";
+          proxy_set_header        X-Forwarded-Proto $scheme;
+        '';
       };
     };
   };
